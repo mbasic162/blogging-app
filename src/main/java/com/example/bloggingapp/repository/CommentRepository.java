@@ -49,17 +49,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Transactional
     @Modifying
     @Query(value = "UPDATE Comment c SET c.isDeleted = true WHERE c.id = :comment_id")
-    void delete(@Param("comment_id") Long commentId);
+    void tempDelete(@Param("comment_id") Long commentId);
 
     @Transactional
     @Modifying
     @Query(value = "UPDATE Comment c SET c.isDeleted = false WHERE c.id = :comment_id")
     void undelete(@Param("comment_id") Long commentId);
-
-    @Transactional
-    @Modifying
-    @Query(value = "DELETE FROM Comment c WHERE c.id = :comment_id")
-    void permanentlyDelete(@Param("comment_id") Long commentId);
 
     @Transactional
     @Modifying

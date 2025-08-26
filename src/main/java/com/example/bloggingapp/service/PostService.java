@@ -3,7 +3,6 @@ package com.example.bloggingapp.service;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -14,9 +13,9 @@ public interface PostService {
 
     Post save(Post post);
 
-    List<Post> findN(int n);
+    Set<Post> findN(int n);
 
-    List<Post> findNAuth(int n, String authUsername);
+    Set<Post> findNAuth(int n, String authUsername);
 
     Optional<String> getTitleById(Long id);
 
@@ -42,7 +41,7 @@ public interface PostService {
     //Only called by like method
     void removeDislike(User user, Post post);
 
-    void delete(String username, Long postId);
+    void tempDelete(String username, Long postId);
 
     void undelete(String username, Long postId);
 

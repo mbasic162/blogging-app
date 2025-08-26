@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,10 +18,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Set<Post> findByUsername(@Param("username") String username);
 
     @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false ORDER BY p.rating DESC")
-    List<Post> findN(Limit n);
+    Set<Post> findN(Limit n);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false  AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:authUser) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:authUser AND bu2=p.user) ORDER BY p.rating DESC")
-    List<Post> findNAuth(Limit n, @Param("auth_id") Long authId);
+    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false  AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu.id=:auth_id) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2.id=:auth_id AND bu2=p.user) ORDER BY p.rating DESC")
+    Set<Post> findNAuth(Limit n, @Param("auth_id") Long authId);
 
     @Query(value = "SELECT p.title FROM Post p WHERE p.id=:id")
     Optional<String> getTitleById(@Param("id") Long id);
@@ -55,17 +54,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Transactional
     @Modifying
     @Query(value = "UPDATE Post p SET p.isDeleted = true WHERE p.id = :post_id")
-    void delete(@Param("post_id") Long postId);
+    void tempDelete(@Param("post_id") Long postId);
 
     @Transactional
     @Modifying
     @Query(value = "UPDATE Post p SET p.isDeleted = false WHERE p.id = :post_id")
     void undelete(@Param("post_id") Long postId);
-
-    @Transactional
-    @Modifying
-    @Query(value = "DELETE FROM Post p WHERE p.id = :post_id")
-    void permanentlyDelete(@Param("post_id") Long postId);
 
     @Transactional
     @Modifying

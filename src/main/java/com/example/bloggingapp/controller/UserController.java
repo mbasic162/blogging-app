@@ -2,11 +2,13 @@ package com.example.bloggingapp.controller;
 
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.UserFollowDto;
+import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -92,6 +94,30 @@ public class UserController {
             throw new UserNotFoundException("User not found!");
         }
         userService.unblock(user, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/delete")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> tempDelete(
+            Authentication authentication) {
+        userService.tempDelete(authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/undelete")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> undelete(
+            Authentication authentication) {
+        userService.undelete(authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/permanentlyDelete")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> permanentlyDelete(
+            Authentication authentication, @RequestBody @Valid LoginRequest request) {
+        userService.permanentlyDelete(authentication.getName(), request);
         return ResponseEntity.ok().build();
     }
     /*

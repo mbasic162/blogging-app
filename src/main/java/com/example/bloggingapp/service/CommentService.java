@@ -50,7 +50,7 @@ public interface CommentService {
 
     void removeDislike(String username, Long commentId);
 
-    void delete(String username, Long commentId);
+    void tempDelete(String username, Long commentId);
 
     void undelete(String username, Long commentId);
 

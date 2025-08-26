@@ -29,6 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsById(@NonNull Long id);
 
+    boolean existsByUsername(String username);
+
     @Transactional
     @Modifying
     @Query(value = "INSERT INTO blocked_users (parent_id, user_id) VALUES (:parent_id, :user_id)", nativeQuery = true)
@@ -38,4 +40,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query(value = "DELETE FROM blocked_users WHERE parent_id = :parent_id AND user_id = :user_id", nativeQuery = true)
     void unblock(@Param("user_id") Long userId, @Param("parent_id") Long parentId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.isDeleted = true WHERE u.id = :user_id")
+    void tempDelete(@Param("user_id") Long userId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.isDeleted = false WHERE u.id = :user_id")
+    void undelete(@Param("user_id") Long userId);
 }

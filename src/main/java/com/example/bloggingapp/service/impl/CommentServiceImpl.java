@@ -214,20 +214,22 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void delete(String username, Long commentId) {
+    public void tempDelete(String username, Long commentId) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
+        if (user.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(user))
+            throw new CommentNotFoundException("Comment not found!");
         if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only delete your own comments!");
         if (comment.getDeleted()) throw new IllegalStateException("This comment is already deleted!");
-        commentRepository.delete(comment.getId());
+        commentRepository.tempDelete(comment.getId());
     }
 
     @Override
     public void undelete(String username, Long commentId) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
+        if (user.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(user))
+            throw new CommentNotFoundException("Comment not found!");
         if (!comment.getUser().equals(user))
             throw new IllegalStateException("You can only undelete your own comments!");
         if (!comment.getDeleted()) throw new IllegalStateException("This comment isn't deleted!");
@@ -240,7 +242,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         checkAllowViewingAuth(comment, username);
         if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only delete your own comments!");
-        commentRepository.permanentlyDelete(comment.getId());
+        commentRepository.delete(comment);
     }
 
     @Override

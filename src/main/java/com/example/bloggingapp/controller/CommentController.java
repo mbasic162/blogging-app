@@ -105,8 +105,8 @@ public class CommentController {
 
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> delete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
-        commentService.delete(authentication.getName(), commentId);
+    public ResponseEntity<CommentDto> tempDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+        commentService.tempDelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 

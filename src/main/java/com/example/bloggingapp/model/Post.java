@@ -9,8 +9,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,7 +31,7 @@ public class Post {
     @ManyToOne
     private User user;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "parentPost")
-    private List<Comment> comments = new ArrayList<>();
+    private Set<Comment> comments = new HashSet<>();
     private final LocalDateTime createdAt = LocalDateTime.now();
     @Accessors(prefix = "is")
     private Boolean isDeleted = false;

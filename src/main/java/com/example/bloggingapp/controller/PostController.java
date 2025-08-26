@@ -22,7 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,14 +36,14 @@ public class PostController {
     private final PostMapper postMapper = PostMapper.INSTANCE;
 
     @PostMapping("/")
-    public ResponseEntity<List<PostDto>> getNPosts(@RequestParam("n") int n, Authentication authentication) {
-        List<Post> posts;
+    public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam("n") int n, Authentication authentication) {
+        Set<Post> posts;
         if (authentication != null && authentication.isAuthenticated()) {
             posts = postService.findNAuth(n, authentication.getName());
         } else {
             posts = postService.findN(n);
         }
-        return ResponseEntity.ok(posts.stream().map(postMapper::toDto).toList());
+        return ResponseEntity.ok(posts.stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
     @PostMapping("/create")
@@ -142,10 +141,10 @@ public class PostController {
 
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> delete(
+    public ResponseEntity<PostDto> tempDelete(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
-        postService.delete(authentication.getName(), postId);
+        postService.tempDelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
 

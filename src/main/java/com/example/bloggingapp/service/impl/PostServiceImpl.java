@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,12 +38,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<Post> findN(int n) {
+    public Set<Post> findN(int n) {
         return postRepository.findN(Limit.of(n));
     }
 
     @Override
-    public List<Post> findNAuth(int n, String authUsername) {
+    public Set<Post> findNAuth(int n, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         return postRepository.findNAuth(Limit.of(n), authUser.getId());
     }
@@ -142,21 +141,23 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void delete(String username, Long postId) {
+    public void tempDelete(String username, Long postId) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
-        checkAllowViewingAuth(post, username);
+        if (user.getBlockedUsers().contains(post.getUser()) || post.getUser().getBlockedUsers().contains(user))
+            throw new PostNotFoundException("Post not found!");
         if (!post.getUser().equals(user)) throw new IllegalStateException("You can only delete your own posts!");
         if (post.getDeleted()) throw new IllegalStateException("This post is already deleted!");
-        postRepository.delete(post.getId());
+        postRepository.tempDelete(post.getId());
     }
 
     @Override
     public void undelete(String username, Long postId) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
-        checkAllowViewingAuth(post, username);
-        if (!post.getUser().equals(user)) throw new IllegalStateException("You can only undelete your own posts!");
+        if (user.getBlockedUsers().contains(post.getUser()) || post.getUser().getBlockedUsers().contains(user))
+            throw new PostNotFoundException("Post not found!");
+        if (!post.getUser().equals(user)) throw new PostNotFoundException("Post not found!");
         if (!post.getDeleted()) throw new IllegalStateException("This post isn't deleted!");
         postRepository.undelete(post.getId());
     }
@@ -167,9 +168,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
         checkAllowViewingAuth(post, username);
         if (!post.getUser().equals(user)) throw new IllegalStateException("You can only delete your own posts!");
-        postRepository.permanentlyDelete(post.getId());
-        //postRepository.deleteById(post.getId());
-
+        postRepository.delete(post);
     }
 
     @Override

@@ -35,6 +35,8 @@ public class User {
     private Boolean isPrivate = false;
     @Accessors(prefix = "is")
     private Boolean isEnabled = true;
+    @Accessors(prefix = "is")
+    private Boolean isDeleted = false;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")

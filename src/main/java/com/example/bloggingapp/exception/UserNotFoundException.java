@@ -1,7 +1,7 @@
 package com.example.bloggingapp.exception;
 
 public class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String username) {
-        super("User not found: " + username);
+    public UserNotFoundException(String message) {
+        super(message);
     }
 }
