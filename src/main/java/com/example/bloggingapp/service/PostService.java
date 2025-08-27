@@ -1,7 +1,6 @@
 package com.example.bloggingapp.service;
 
 import com.example.bloggingapp.model.Post;
-import com.example.bloggingapp.model.User;
 
 import java.util.Optional;
 import java.util.Set;
@@ -17,8 +16,6 @@ public interface PostService {
 
     Set<Post> findNAuth(int n, String authUsername);
 
-    Optional<String> getTitleById(Long id);
-
     String getUriByIdAndTitle(Long postId, String title);
 
     Long getIdByUri(String uri);
@@ -31,15 +28,9 @@ public interface PostService {
 
     void removeLike(String username, Long postId);
 
-    //Only called by dislike method
-    void removeLike(User user, Post post);
-
     void dislike(String username, Long postId);
 
     void removeDislike(String username, Long postId);
-
-    //Only called by like method
-    void removeDislike(User user, Post post);
 
     void tempDelete(String username, Long postId);
 

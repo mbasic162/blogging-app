@@ -38,15 +38,9 @@ public interface CommentService {
 
     void like(String username, Long commentId);
 
-    // Only called by dislike method
-    void removeLike(User user, Comment comment);
-
     void removeLike(String username, Long commentId);
 
     void dislike(String username, Long commentId);
-
-    // Only called by like method
-    void removeDislike(User user, Comment comment);
 
     void removeDislike(String username, Long commentId);
 

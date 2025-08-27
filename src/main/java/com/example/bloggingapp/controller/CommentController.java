@@ -77,63 +77,63 @@ public class CommentController {
 
     @PostMapping("/like")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> like(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> like(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.like(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/removeLike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> removeLike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> removeLike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.removeLike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/dislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> dislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> dislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.dislike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/removeDislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> removeDislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> removeDislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.removeDislike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> tempDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> tempDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.tempDelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> undelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> undelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.undelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/hide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> hide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> hide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.hide(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/unhide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> unhide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> unhide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.unhide(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> permanentlyDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> permanentlyDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.permanentlyDelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }

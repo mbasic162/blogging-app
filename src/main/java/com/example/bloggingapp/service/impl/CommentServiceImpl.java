@@ -110,7 +110,7 @@ public class CommentServiceImpl implements CommentService {
     public void checkAllowViewingAuth(Comment comment, String authUsername) {
         User user = comment.getUser();
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (comment.getHidden() || comment.getDeleted() || user.getPrivate() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+        if ((comment.getHidden() && !user.equals(authUser)) || comment.getDeleted() || user.getPrivate() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
             throw new CommentNotFoundException("Comment not found!");
         }
     }
@@ -157,16 +157,12 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         checkAllowViewingAuth(comment, username);
         if (comment.getLikedBy().contains(user)) throw new IllegalStateException("You already liked this comment!");
-        if (comment.getDislikedBy().contains(user)) removeDislike(user, comment);
+        if (comment.getDislikedBy().contains(user)) {
+            commentRepository.removeDislike(user.getId(), comment.getId());
+            commentRepository.changeRating(comment.getId(), 1);
+        }
         commentRepository.insertLike(user.getId(), comment.getId());
         commentRepository.changeRating(comment.getId(), 1);
-    }
-
-    @Override
-    @Transactional
-    public void removeLike(User user, Comment comment) {
-        commentRepository.removeLike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), -1);
     }
 
     @Override
@@ -189,16 +185,12 @@ public class CommentServiceImpl implements CommentService {
         checkAllowViewingAuth(comment, username);
         if (comment.getDislikedBy().contains(user))
             throw new IllegalStateException("You already disliked this comment!");
-        if (comment.getLikedBy().contains(user)) removeLike(user, comment);
+        if (comment.getLikedBy().contains(user)) {
+            commentRepository.removeLike(user.getId(), comment.getId());
+            commentRepository.changeRating(comment.getId(), -1);
+        }
         commentRepository.insertDislike(user.getId(), comment.getId());
         commentRepository.changeRating(comment.getId(), -1);
-    }
-
-    @Override
-    @Transactional
-    public void removeDislike(User user, Comment comment) {
-        commentRepository.removeDislike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), 1);
     }
 
     @Override

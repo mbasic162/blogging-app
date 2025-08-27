@@ -26,7 +26,5 @@ public interface UserService {
 
     boolean isBlockedByOrPrivate(User user, String authUsername);
 
-    boolean existsByUsername(String username);
-
     Optional<User> findByUsername(String username);
 }

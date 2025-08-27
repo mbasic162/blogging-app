@@ -19,11 +19,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationManager authManager;
 
-    @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
-
+    
     @Override
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -34,7 +30,7 @@ public class UserServiceImpl implements UserService {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authUser.equals(user)) throw new IllegalArgumentException("You cannot follow yourself!");
         if (user.getFollowers().contains(authUser))
-            throw new IllegalArgumentException("You already follow this user!");
+            throw new IllegalStateException("You already follow this user!");
         userRepository.follow(user.getId(), authUser.getId());
     }
 
@@ -44,7 +40,7 @@ public class UserServiceImpl implements UserService {
         if (authUser.equals(user))
             throw new IllegalArgumentException("You cannot unfollow yourself!");
         if (!authUser.getFollowing().contains(user))
-            throw new IllegalArgumentException("You aren't following this user!");
+            throw new IllegalStateException("You aren't following this user!");
         userRepository.unfollow(user.getId(), authUser.getId());
     }
 
@@ -53,7 +49,7 @@ public class UserServiceImpl implements UserService {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authUser.equals(user)) throw new IllegalArgumentException("You cannot block yourself!");
         if (authUser.getBlockedUsers().contains(user))
-            throw new IllegalArgumentException("You already blocked this user!");
+            throw new IllegalStateException("You already blocked this user!");
         if (user.getFollowers().contains(authUser)) userRepository.unfollow(user.getId(), authUser.getId());
         if (user.getFollowing().contains(authUser)) userRepository.unfollow(authUser.getId(), user.getId());
         userRepository.block(user.getId(), authUser.getId());
@@ -64,7 +60,7 @@ public class UserServiceImpl implements UserService {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authUser.equals(user)) throw new IllegalArgumentException("You cannot unblock yourself!");
         if (!authUser.getBlockedUsers().contains(user))
-            throw new IllegalArgumentException("You haven't blocked this user!");
+            throw new IllegalStateException("You haven't blocked this user!");
         userRepository.unblock(user.getId(), authUser.getId());
     }
 
@@ -72,7 +68,7 @@ public class UserServiceImpl implements UserService {
     public void tempDelete(String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authUser.getDeleted()) {
-            throw new IllegalArgumentException("User is already deleted!");
+            throw new IllegalStateException("User is already deleted!");
         }
         userRepository.tempDelete(authUser.getId());
     }
@@ -81,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public void undelete(String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (!authUser.getDeleted()) {
-            throw new IllegalArgumentException("User is not deleted!");
+            throw new IllegalStateException("User is not deleted!");
         }
         userRepository.undelete(authUser.getId());
     }

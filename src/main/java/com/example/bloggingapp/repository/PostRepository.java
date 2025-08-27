@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -22,9 +21,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false  AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu.id=:auth_id) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2.id=:auth_id AND bu2=p.user) ORDER BY p.rating DESC")
     Set<Post> findNAuth(Limit n, @Param("auth_id") Long authId);
-
-    @Query(value = "SELECT p.title FROM Post p WHERE p.id=:id")
-    Optional<String> getTitleById(@Param("id") Long id);
 
     @Transactional
     @Modifying

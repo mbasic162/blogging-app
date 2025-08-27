@@ -105,7 +105,7 @@ public class PostController {
 
     @PostMapping("/like")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> like(
+    public ResponseEntity<Void> like(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.like(authentication.getName(), postId);
@@ -114,7 +114,7 @@ public class PostController {
 
     @PostMapping("/removeLike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> removeLike(
+    public ResponseEntity<Void> removeLike(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.removeLike(authentication.getName(), postId);
@@ -123,7 +123,7 @@ public class PostController {
 
     @PostMapping("/dislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> dislike(
+    public ResponseEntity<Void> dislike(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.dislike(authentication.getName(), postId);
@@ -132,7 +132,7 @@ public class PostController {
 
     @PostMapping("/removeDislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> removeDislike(
+    public ResponseEntity<Void> removeDislike(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.removeDislike(authentication.getName(), postId);
@@ -141,7 +141,7 @@ public class PostController {
 
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> tempDelete(
+    public ResponseEntity<Void> tempDelete(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.tempDelete(authentication.getName(), postId);
@@ -150,7 +150,7 @@ public class PostController {
 
     @PostMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> undelete(
+    public ResponseEntity<Void> undelete(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.undelete(authentication.getName(), postId);
@@ -159,7 +159,7 @@ public class PostController {
 
     @PostMapping("/hide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> hide(
+    public ResponseEntity<Void> hide(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.hide(authentication.getName(), postId);
@@ -168,7 +168,7 @@ public class PostController {
 
     @PostMapping("/unhide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> unhide(
+    public ResponseEntity<Void> unhide(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.unhide(authentication.getName(), postId);
@@ -177,7 +177,7 @@ public class PostController {
 
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> permanentlyDelete(
+    public ResponseEntity<Void> permanentlyDelete(
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.permanentlyDelete(authentication.getName(), postId);

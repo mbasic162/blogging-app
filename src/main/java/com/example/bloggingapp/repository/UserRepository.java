@@ -29,8 +29,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsById(@NonNull Long id);
 
-    boolean existsByUsername(String username);
-
     @Transactional
     @Modifying
     @Query(value = "INSERT INTO blocked_users (parent_id, user_id) VALUES (:parent_id, :user_id)", nativeQuery = true)
