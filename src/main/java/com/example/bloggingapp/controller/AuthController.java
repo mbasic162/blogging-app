@@ -1,8 +1,11 @@
 package com.example.bloggingapp.controller;
 
 
+import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
+import com.example.bloggingapp.mapper.UserMapper;
+import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.service.impl.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final UserMapper userMapper = UserMapper.INSTANCE;
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginRequest) {
@@ -25,8 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest registerRequest) {
-        authService.register(registerRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<UserDto> register(@RequestBody @Valid RegisterRequest registerRequest) {
+        User user = authService.register(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(user));
     }
 }

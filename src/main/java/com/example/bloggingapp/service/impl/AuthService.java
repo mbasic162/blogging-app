@@ -4,8 +4,8 @@ import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.User;
-import com.example.bloggingapp.repository.UserRepository;
 import com.example.bloggingapp.security.JwtUtils;
+import com.example.bloggingapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,20 +15,20 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authManager;
+    private final UserService userService;
 
-    public void register(RegisterRequest registerRequest) {
-        if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
+    public User register(RegisterRequest registerRequest) {
+        if (userService.existsByUsernameIgnoreCase(registerRequest.username())) {
             throw new IllegalArgumentException("Username is already in use!");
         }
-        if (userRepository.findByEmail(registerRequest.email()).isPresent()) {
+        if (userService.existsByEmailIgnoreCase(registerRequest.email())) {
             throw new IllegalArgumentException("Email is already in use!");
         }
 
-        userRepository.save(new User(
+        return userService.save(new User(
                 registerRequest.name(),
                 registerRequest.username(),
                 registerRequest.email(),
@@ -37,7 +37,7 @@ public class AuthService {
     }
 
     public String login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         return jwtUtils.generateToken(user.getUsername(), user.getRoles());
     }

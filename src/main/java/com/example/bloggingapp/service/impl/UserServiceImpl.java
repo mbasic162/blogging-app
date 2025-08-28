@@ -19,7 +19,21 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationManager authManager;
 
-    
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public boolean existsByUsernameIgnoreCase(String username) {
+        return userRepository.existsByUsernameIgnoreCase(username);
+    }
+
+    @Override
+    public boolean existsByEmailIgnoreCase(String email) {
+        return userRepository.existsByEmailIgnoreCase(email);
+    }
+
     @Override
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);

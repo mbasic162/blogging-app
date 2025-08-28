@@ -6,6 +6,13 @@ import com.example.bloggingapp.model.User;
 import java.util.Optional;
 
 public interface UserService {
+
+    User save(User user);
+
+    boolean existsByUsernameIgnoreCase(String username);
+
+    boolean existsByEmailIgnoreCase(String email);
+
     void follow(User user, String authUsername);
 
     void unfollow(User user, String authUsername);
@@ -27,4 +34,5 @@ public interface UserService {
     boolean isBlockedByOrPrivate(User user, String authUsername);
 
     Optional<User> findByUsername(String username);
+
 }
