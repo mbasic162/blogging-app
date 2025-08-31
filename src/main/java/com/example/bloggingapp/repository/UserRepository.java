@@ -14,9 +14,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    boolean existsByUsername(String username);
+
     boolean existsByUsernameIgnoreCase(String username);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsById(@NonNull Long id);
 
     Optional<User> findByUsername(String username);
 
@@ -29,8 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query(value = "DELETE FROM followers WHERE user_id = :user_id AND parent_id = :parent_id", nativeQuery = true)
     void unfollow(@Param("user_id") Long userId, @Param("parent_id") Long parentId);
-
-    boolean existsById(@NonNull Long id);
 
     @Transactional
     @Modifying

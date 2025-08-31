@@ -15,11 +15,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.user.username = :username")
     Set<Comment> findByUsername(String username);
 
-    @Query("SELECT c FROM Comment c WHERE c.parentPost.id = :postId AND c.parentComment IS NULL ORDER BY c.rating DESC")
-    Set<Comment> findByParentPostId(Long postId);
+    @Query("SELECT c FROM Comment c WHERE c.parentPost.id = :post_id AND c.parentComment IS NULL ORDER BY c.rating DESC")
+    Set<Comment> findByParentPostId(@Param("post_id") Long postId);
 
-    @Query("SELECT c FROM Comment c WHERE c.parentComment.id = :commentId ORDER BY c.rating DESC")
-    Set<Comment> findByParentCommentId(Long commentId);
+    @Query("SELECT c FROM Comment c WHERE c.parentComment.id = :comment_id ORDER BY c.rating DESC")
+    Set<Comment> findByParentCommentId(@Param("comment_id") Long commentId);
 
     @Transactional
     @Modifying

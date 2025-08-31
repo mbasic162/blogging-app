@@ -25,6 +25,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
     public boolean existsByUsernameIgnoreCase(String username) {
         return userRepository.existsByUsernameIgnoreCase(username);
     }

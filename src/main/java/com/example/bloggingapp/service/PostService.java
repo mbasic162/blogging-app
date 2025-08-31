@@ -8,6 +8,8 @@ import java.util.Set;
 public interface PostService {
     Set<Post> findByUsername(String username);
 
+    Set<Post> findByUsernameAuth(String username, String authUsername);
+
     Optional<Post> findById(Long id);
 
     Post save(Post post);

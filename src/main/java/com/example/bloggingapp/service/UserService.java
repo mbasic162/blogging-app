@@ -9,6 +9,8 @@ public interface UserService {
 
     User save(User user);
 
+    boolean existsByUsername(String username);
+
     boolean existsByUsernameIgnoreCase(String username);
 
     boolean existsByEmailIgnoreCase(String email);

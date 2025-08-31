@@ -1,12 +1,15 @@
 package com.example.bloggingapp.controller;
 
+import com.example.bloggingapp.dto.PostDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.UserFollowDto;
 import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
+import com.example.bloggingapp.mapper.PostMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -26,6 +29,9 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserFollowMapper userFollowMapper = UserFollowMapper.INSTANCE;
+    private final PostService postService;
+    private final PostMapper postMapper = PostMapper.INSTANCE;
+
 
     @GetMapping("/{username}")
     public ResponseEntity<UserDto> getUser(@PathVariable String username, Authentication authentication) {
@@ -34,6 +40,16 @@ public class UserController {
             userService.checkAllowViewingAuth(user, authentication.getName());
         else userService.checkAllowViewing(user);
         return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
+    @GetMapping("/{username}/posts")
+    public ResponseEntity<Set<PostDto>> getPosts(@PathVariable String username, Authentication authentication) {
+        if(!userService.existsByUsername(username)){
+            throw new UserNotFoundException("User not found!");
+        }
+        if (authentication != null && authentication.isAuthenticated())
+            return ResponseEntity.ok(postService.findByUsernameAuth(username, authentication.getName()).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+        return ResponseEntity.ok(postService.findByUsername(username).stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")
@@ -120,17 +136,4 @@ public class UserController {
         userService.permanentlyDelete(authentication.getName(), request);
         return ResponseEntity.ok().build();
     }
-    /*
-    @GetMapping("/admintest")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> adminTest() {
-        return ResponseEntity.ok("Admin access granted");
-    }
-
-    @GetMapping("/test")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Set<UserFollowDto>> test(Authentication authentication) {
-        return ResponseEntity.ok().build();
-    }
-     */
 }

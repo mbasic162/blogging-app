@@ -5,8 +5,8 @@ import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.repository.PostRepository;
-import com.example.bloggingapp.repository.UserRepository;
 import com.example.bloggingapp.service.PostService;
+import com.example.bloggingapp.service.UserService;
 import com.example.bloggingapp.utils.UriSanitizer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public Optional<Post> findById(Long id) {
@@ -30,6 +30,12 @@ public class PostServiceImpl implements PostService {
     @Override
     public Set<Post> findByUsername(String username) {
         return postRepository.findByUsername(username);
+    }
+
+    @Override
+    public Set<Post> findByUsernameAuth(String username, String authUsername) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        return postRepository.findByUsernameAuth(username, authUser.getId());
     }
 
     @Override
@@ -44,7 +50,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Set<Post> findNAuth(int n, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         return postRepository.findNAuth(Limit.of(n), authUser.getId());
     }
 
@@ -59,7 +65,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void checkAllowViewingAuth(Post post, String authUsername) {
         User user = post.getUser();
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (post.getHidden() && !authUser.equals(user) || post.getDeleted() || user.getPrivate() && !post.getShareableDespitePrivateUser() && !user.equals(authUser) || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
             throw new PostNotFoundException("Post not found!");
         }
@@ -78,7 +84,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void like(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (post.getLikedBy().contains(user)) throw new IllegalStateException("You already liked this post!");
@@ -93,7 +99,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void removeLike(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (!post.getLikedBy().contains(user)) throw new IllegalStateException("You haven't liked this post yet!");
@@ -104,7 +110,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void dislike(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (post.getDislikedBy().contains(user)) throw new IllegalStateException("You already disliked this post!");
@@ -120,7 +126,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void removeDislike(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
         checkAllowViewingAuth(post, username);
         if (!post.getDislikedBy().contains(user)) throw new IllegalStateException("You haven't disliked this post!");
@@ -130,7 +136,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void tempDelete(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         if (user.getBlockedUsers().contains(post.getUser()) || post.getUser().getBlockedUsers().contains(user) || (post.getHidden() && !post.getUser().equals(user)))
             throw new PostNotFoundException("Post not found!");
@@ -141,7 +147,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void undelete(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         if (!post.getUser().equals(user)) throw new PostNotFoundException("Post not found!");
         if (!post.getDeleted()) throw new IllegalStateException("This post isn't deleted!");
@@ -150,7 +156,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void permanentlyDelete(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (!post.getUser().equals(user)) throw new IllegalStateException("You can only delete your own posts!");
@@ -159,7 +165,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void hide(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (!post.getUser().equals(user)) throw new IllegalStateException("You can only hide your own posts!");
@@ -169,7 +175,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void unhide(String username, Long postId) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         checkAllowViewingAuth(post, username);
         if (!post.getUser().equals(user)) throw new IllegalStateException("You can only unhide your own posts!");
