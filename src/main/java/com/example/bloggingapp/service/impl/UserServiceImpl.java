@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
         if (authUser.getDeleted()) {
             throw new IllegalStateException("User is already deleted!");
         }
-        userRepository.tempDelete(authUser.getId());
+        userRepository.tempDelete(authUser);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
         if (!authUser.getDeleted()) {
             throw new IllegalStateException("User is not deleted!");
         }
-        userRepository.undelete(authUser.getId());
+        userRepository.undelete(authUser);
     }
 
     @Override

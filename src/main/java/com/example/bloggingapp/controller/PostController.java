@@ -36,12 +36,12 @@ public class PostController {
     private final PostMapper postMapper = PostMapper.INSTANCE;
 
     @PostMapping("/")
-    public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam("n") int n, Authentication authentication) {
+    public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam("number") int number, Authentication authentication) {
         Set<Post> posts;
         if (authentication != null && authentication.isAuthenticated()) {
-            posts = postService.findNAuth(n, authentication.getName());
+            posts = postService.findNAuth(number, authentication.getName());
         } else {
-            posts = postService.findN(n);
+            posts = postService.findN(number);
         }
         return ResponseEntity.ok(posts.stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
@@ -95,10 +95,10 @@ public class PostController {
         Set<Comment> comments;
         if (authentication != null && authentication.isAuthenticated()) {
             postService.checkAllowViewingAuth(post, authentication.getName());
-            comments = commentService.findByParentPostIdAuth(postId, authentication.getName());
+            comments = commentService.findByParentPostAuth(post, authentication.getName());
         } else {
             postService.checkAllowViewing(post);
-            comments = commentService.findByParentPostId(postId);
+            comments = commentService.findByParentPost(post);
         }
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }

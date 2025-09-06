@@ -26,21 +26,21 @@ public interface PostService {
 
     void checkAllowViewingAuth(Post post, String authUsername);
 
-    void like(String username, Long postId);
+    void like(String authUsername, Long postId);
 
-    void removeLike(String username, Long postId);
+    void removeLike(String authUsername, Long postId);
 
-    void dislike(String username, Long postId);
+    void dislike(String authUsername, Long postId);
 
-    void removeDislike(String username, Long postId);
+    void removeDislike(String authUsername, Long postId);
 
-    void tempDelete(String username, Long postId);
+    void tempDelete(String authUsername, Long postId);
 
-    void undelete(String username, Long postId);
+    void undelete(String authUsername, Long postId);
 
-    void permanentlyDelete(String username, Long postId);
+    void permanentlyDelete(String authUsername, Long postId);
 
-    void hide(String username, Long postId);
+    void hide(String authUsername, Long postId);
 
-    void unhide(String username, Long postId);
+    void unhide(String authUsername, Long postId);
 }

@@ -44,7 +44,7 @@ public class UserController {
 
     @GetMapping("/{username}/posts")
     public ResponseEntity<Set<PostDto>> getPosts(@PathVariable String username, Authentication authentication) {
-        if(!userService.existsByUsername(username)){
+        if (!userService.existsByUsername(username)) {
             throw new UserNotFoundException("User not found!");
         }
         if (authentication != null && authentication.isAuthenticated())

@@ -46,11 +46,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isDeleted = true WHERE u.id = :user_id")
-    void tempDelete(@Param("user_id") Long userId);
+    @Query(value = "UPDATE User u SET u.isDeleted = true WHERE u = :user")
+    void tempDelete(User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isDeleted = false WHERE u.id = :user_id")
-    void undelete(@Param("user_id") Long userId);
+    @Query(value = "UPDATE User u SET u.isDeleted = false WHERE u = :user")
+    void undelete(User user);
 }

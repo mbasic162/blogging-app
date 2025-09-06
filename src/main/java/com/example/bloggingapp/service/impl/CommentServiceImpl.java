@@ -33,9 +33,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Comment create(CreateCommentRequest request, String username) {
+    public Comment create(CreateCommentRequest request, String authUsername) {
         Comment comment;
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (request.parentPostId() == null && request.parentCommentId() == null) {
             throw new IllegalArgumentException("Either postId or commentId must be provided!");
         }
@@ -44,12 +44,12 @@ public class CommentServiceImpl implements CommentService {
         }
         if (request.parentPostId() != null) {
             Post post = postService.findById(request.parentPostId()).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-            postService.checkAllowViewingAuth(post, username);
-            comment = new Comment(request.content(), user, post);
+            postService.checkAllowViewingAuth(post, authUsername);
+            comment = new Comment(request.content(), authUser, post);
         } else {
             Comment parentComment = findById(request.parentCommentId()).orElseThrow(() -> new CommentNotFoundException("Parent comment not found!"));
-            checkAllowViewingAuth(parentComment, username);
-            comment = new Comment(request.content(), user, parentComment.getParentPost(), parentComment);
+            checkAllowViewingAuth(parentComment, authUsername);
+            comment = new Comment(request.content(), authUser, parentComment.getParentPost(), parentComment);
         }
         return save(comment);
     }
@@ -116,32 +116,32 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Set<Comment> findByParentPostId(Long postId) {
-        Set<Comment> comments = commentRepository.findByParentPostId(postId);
+    public Set<Comment> findByParentPost(Post post) {
+        Set<Comment> comments = commentRepository.findByParentPost(post);
         filterComments(comments);
         return comments;
 
     }
 
     @Override
-    public Set<Comment> findByParentPostIdAuth(Long postId, String authUsername) {
+    public Set<Comment> findByParentPostAuth(Post post, String authUsername) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        Set<Comment> comments = commentRepository.findByParentPostId(postId);
+        Set<Comment> comments = commentRepository.findByParentPost(post);
         filterCommentsAuth(comments, authUser);
         return comments;
     }
 
     @Override
-    public Set<Comment> findByParentCommentId(Long commentId) {
-        Set<Comment> comments = commentRepository.findByParentCommentId(commentId);
+    public Set<Comment> findByParentComment(Comment comment) {
+        Set<Comment> comments = commentRepository.findByParentComment(comment);
         filterComments(comments);
         return comments;
     }
 
     @Override
-    public Set<Comment> findByParentCommentIdAuth(Long commentId, String username) {
-        User authUser = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        Set<Comment> comments = commentRepository.findByParentCommentId(commentId);
+    public Set<Comment> findByParentCommentAuth(Comment comment, String authUsername) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        Set<Comment> comments = commentRepository.findByParentComment(comment);
         filterCommentsAuth(comments, authUser);
         return comments;
     }
@@ -152,108 +152,111 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void like(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void like(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (comment.getLikedBy().contains(user)) throw new IllegalStateException("You already liked this comment!");
-        if (comment.getDislikedBy().contains(user)) {
-            commentRepository.removeDislike(user.getId(), comment.getId());
-            commentRepository.changeRating(comment.getId(), 1);
+        checkAllowViewingAuth(comment, authUsername);
+        if (comment.getLikedBy().contains(authUser)) throw new IllegalStateException("You already liked this comment!");
+        if (comment.getDislikedBy().contains(authUser)) {
+            commentRepository.removeDislike(authUser.getId(), comment.getId());
+            commentRepository.changeRating(comment, 1);
         }
-        commentRepository.insertLike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), 1);
+        commentRepository.insertLike(authUser.getId(), comment.getId());
+        commentRepository.changeRating(comment, 1);
     }
 
     @Override
     @Transactional
-    public void removeLike(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void removeLike(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (!comment.getLikedBy().contains(user))
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getLikedBy().contains(authUser))
             throw new IllegalStateException("You haven't liked this comment yet!");
-        commentRepository.removeLike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), -1);
+        commentRepository.removeLike(authUser.getId(), comment.getId());
+        commentRepository.changeRating(comment, -1);
     }
 
     @Override
     @Transactional
-    public void dislike(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void dislike(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (comment.getDislikedBy().contains(user))
+        checkAllowViewingAuth(comment, authUsername);
+        if (comment.getDislikedBy().contains(authUser))
             throw new IllegalStateException("You already disliked this comment!");
-        if (comment.getLikedBy().contains(user)) {
-            commentRepository.removeLike(user.getId(), comment.getId());
-            commentRepository.changeRating(comment.getId(), -1);
+        if (comment.getLikedBy().contains(authUser)) {
+            commentRepository.removeLike(authUser.getId(), comment.getId());
+            commentRepository.changeRating(comment, -1);
         }
-        commentRepository.insertDislike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), -1);
+        commentRepository.insertDislike(authUser.getId(), comment.getId());
+        commentRepository.changeRating(comment, -1);
     }
 
     @Override
     @Transactional
-    public void removeDislike(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void removeDislike(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (!comment.getDislikedBy().contains(user))
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getDislikedBy().contains(authUser))
             throw new IllegalStateException("You haven't disliked this comment yet!");
-        commentRepository.removeDislike(user.getId(), comment.getId());
-        commentRepository.changeRating(comment.getId(), 1);
+        commentRepository.removeDislike(authUser.getId(), comment.getId());
+        commentRepository.changeRating(comment, 1);
     }
 
     @Override
-    public void tempDelete(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void tempDelete(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (user.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(user))
+        if (authUser.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(authUser))
             throw new CommentNotFoundException("Comment not found!");
-        if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only delete your own comments!");
+        if (!comment.getUser().equals(authUser))
+            throw new IllegalStateException("You can only delete your own comments!");
         if (comment.getDeleted()) throw new IllegalStateException("This comment is already deleted!");
-        commentRepository.tempDelete(comment.getId());
+        commentRepository.tempDelete(comment);
     }
 
     @Override
-    public void undelete(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void undelete(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (user.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(user))
+        if (authUser.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(authUser))
             throw new CommentNotFoundException("Comment not found!");
-        if (!comment.getUser().equals(user))
+        if (!comment.getUser().equals(authUser))
             throw new IllegalStateException("You can only undelete your own comments!");
         if (!comment.getDeleted()) throw new IllegalStateException("This comment isn't deleted!");
-        commentRepository.undelete(comment.getId());
+        commentRepository.undelete(comment);
     }
 
     @Override
-    public void permanentlyDelete(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void permanentlyDelete(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only delete your own comments!");
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getUser().equals(authUser))
+            throw new IllegalStateException("You can only delete your own comments!");
         commentRepository.delete(comment);
     }
 
     @Override
-    public void hide(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void hide(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only hide your own comments!");
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getUser().equals(authUser))
+            throw new IllegalStateException("You can only hide your own comments!");
         if (comment.getHidden()) throw new IllegalStateException("This comment is already hidden!");
-        commentRepository.hide(comment.getId());
+        commentRepository.hide(comment);
     }
 
     @Override
-    public void unhide(String username, Long commentId) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public void unhide(String authUsername, Long commentId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, username);
-        if (!comment.getUser().equals(user)) throw new IllegalStateException("You can only unhide your own posts!");
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getUser().equals(authUser)) throw new IllegalStateException("You can only unhide your own posts!");
         if (!comment.getHidden()) throw new IllegalStateException("This comment is not hidden!");
-        commentRepository.unhide(comment.getId());
+        commentRepository.unhide(comment);
     }
 }

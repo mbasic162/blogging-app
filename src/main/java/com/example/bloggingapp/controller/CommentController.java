@@ -67,9 +67,9 @@ public class CommentController {
         Set<Comment> comments;
         if (authentication != null && authentication.isAuthenticated()) {
             commentService.checkAllowViewingAuth(comment, authentication.getName());
-            comments = commentService.findByParentCommentIdAuth(comment.getId(), authentication.getName());
+            comments = commentService.findByParentCommentAuth(comment, authentication.getName());
         } else {
-            comments = commentService.findByParentCommentId(comment.getId());
+            comments = commentService.findByParentComment(comment);
             commentService.checkAllowViewing(comment);
         }
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));

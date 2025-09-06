@@ -2,6 +2,7 @@ package com.example.bloggingapp.service;
 
 import com.example.bloggingapp.dto.request.CreateCommentRequest;
 import com.example.bloggingapp.model.Comment;
+import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 
 import java.util.Optional;
@@ -10,17 +11,17 @@ import java.util.Set;
 public interface CommentService {
     Comment save(Comment comment);
 
-    Comment create(CreateCommentRequest request, String username);
+    Comment create(CreateCommentRequest request, String authUsername);
 
     Set<Comment> findByUsername(String username);
 
-    Set<Comment> findByParentPostId(Long postId);
+    Set<Comment> findByParentPost(Post post);
 
-    Set<Comment> findByParentPostIdAuth(Long postId, String username);
+    Set<Comment> findByParentPostAuth(Post post, String authUsername);
 
-    Set<Comment> findByParentCommentId(Long commentId);
+    Set<Comment> findByParentComment(Comment comment);
 
-    Set<Comment> findByParentCommentIdAuth(Long commentId, String username);
+    Set<Comment> findByParentCommentAuth(Comment comment, String authUsername);
 
     void filterCommentsAuth(Set<Comment> comments, User authUser);
 
@@ -36,21 +37,21 @@ public interface CommentService {
 
     Long getIdByUri(String url);
 
-    void like(String username, Long commentId);
+    void like(String authUsername, Long commentId);
 
-    void removeLike(String username, Long commentId);
+    void removeLike(String authUsername, Long commentId);
 
-    void dislike(String username, Long commentId);
+    void dislike(String authUsername, Long commentId);
 
-    void removeDislike(String username, Long commentId);
+    void removeDislike(String authUsername, Long commentId);
 
-    void tempDelete(String username, Long commentId);
+    void tempDelete(String authUsername, Long commentId);
 
-    void undelete(String username, Long commentId);
+    void undelete(String authUsername, Long commentId);
 
-    void permanentlyDelete(String username, Long commentId);
+    void permanentlyDelete(String authUsername, Long commentId);
 
-    void hide(String username, Long commentId);
+    void hide(String authUsername, Long commentId);
 
-    void unhide(String username, Long commentId);
+    void unhide(String authUsername, Long commentId);
 }

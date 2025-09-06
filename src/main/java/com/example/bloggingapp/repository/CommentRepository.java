@@ -1,6 +1,7 @@
 package com.example.bloggingapp.repository;
 
 import com.example.bloggingapp.model.Comment;
+import com.example.bloggingapp.model.Post;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,11 +16,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.user.username = :username")
     Set<Comment> findByUsername(String username);
 
-    @Query("SELECT c FROM Comment c WHERE c.parentPost.id = :post_id AND c.parentComment IS NULL ORDER BY c.rating DESC")
-    Set<Comment> findByParentPostId(@Param("post_id") Long postId);
+    @Query("SELECT c FROM Comment c WHERE c.parentPost = :post AND c.parentComment IS NULL ORDER BY c.rating DESC")
+    Set<Comment> findByParentPost(Post post);
 
-    @Query("SELECT c FROM Comment c WHERE c.parentComment.id = :comment_id ORDER BY c.rating DESC")
-    Set<Comment> findByParentCommentId(@Param("comment_id") Long commentId);
+    @Query("SELECT c FROM Comment c WHERE c.parentComment = :comment ORDER BY c.rating DESC")
+    Set<Comment> findByParentComment(Comment comment);
 
     @Transactional
     @Modifying
@@ -43,28 +44,28 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.rating = c.rating + :change WHERE c.id = :comment_id")
-    void changeRating(@Param("comment_id") Long commentId, @Param("change") int change);
+    @Query(value = "UPDATE Comment c SET c.rating = c.rating + :change WHERE c = :comment")
+    void changeRating(Comment comment, @Param("change") int change);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeleted = true WHERE c.id = :comment_id")
-    void tempDelete(@Param("comment_id") Long commentId);
+    @Query(value = "UPDATE Comment c SET c.isDeleted = true WHERE c = :comment")
+    void tempDelete(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeleted = false WHERE c.id = :comment_id")
-    void undelete(@Param("comment_id") Long commentId);
+    @Query(value = "UPDATE Comment c SET c.isDeleted = false WHERE c.id = :comment")
+    void undelete(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isHidden = true WHERE c.id = :comment_id")
-    void hide(@Param("comment_id") Long commentId);
+    @Query(value = "UPDATE Comment c SET c.isHidden = true WHERE c.id = :comment")
+    void hide(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isHidden = false WHERE c.id = :comment_id")
-    void unhide(@Param("comment_id") Long commentId);
+    @Query(value = "UPDATE Comment c SET c.isHidden = false WHERE c.id = :comment")
+    void unhide(Comment comment);
     /*
         @Query("SELECT c FROM Comment c WHERE c.parentPost.id = :postId AND c.isHidden=false AND c.isDeleted=false AND c.user.isPrivate=false AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:authUser) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:authUser AND bu2=c.user) ORDER BY c.rating DESC")
     Set<Comment> findByParentPostIdAuth(Long postId, @Param("authUser") User authUser);

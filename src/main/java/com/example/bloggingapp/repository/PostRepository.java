@@ -1,6 +1,7 @@
 package com.example.bloggingapp.repository;
 
 import com.example.bloggingapp.model.Post;
+import com.example.bloggingapp.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,8 +23,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false ORDER BY p.rating DESC")
     Set<Post> findN(Limit n);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false  AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu.id=:auth_id) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2.id=:auth_id AND bu2=p.user) ORDER BY p.rating DESC")
-    Set<Post> findNAuth(Limit n, @Param("auth_id") Long authId);
+    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false  AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
+    Set<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
 
     @Transactional
     @Modifying
@@ -47,26 +48,26 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.rating = p.rating + :change WHERE p.id = :post_id")
-    void changeRating(@Param("post_id") Long postId, @Param("change") int change);
+    @Query(value = "UPDATE Post p SET p.rating = p.rating + :change WHERE p = :post")
+    void changeRating(Post post, @Param("change") int change);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeleted = true WHERE p.id = :post_id")
-    void tempDelete(@Param("post_id") Long postId);
+    @Query(value = "UPDATE Post p SET p.isDeleted = true WHERE p = :post")
+    void tempDelete(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeleted = false WHERE p.id = :post_id")
-    void undelete(@Param("post_id") Long postId);
+    @Query(value = "UPDATE Post p SET p.isDeleted = false WHERE p = :post")
+    void undelete(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isHidden = true WHERE p.id = :post_id")
-    void hide(@Param("post_id") Long postId);
+    @Query(value = "UPDATE Post p SET p.isHidden = true WHERE p = :post")
+    void hide(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isHidden = false WHERE p.id = :post_id")
-    void unhide(@Param("post_id") Long postId);
+    @Query(value = "UPDATE Post p SET p.isHidden = false WHERE p = :post")
+    void unhide(Post post);
 }
