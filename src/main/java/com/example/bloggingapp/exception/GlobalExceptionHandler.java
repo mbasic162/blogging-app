@@ -1,6 +1,7 @@
 package com.example.bloggingapp.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,6 +34,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(401).body(ex.getMessage());
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException() {
+        return ResponseEntity.status(401).body("Please log in!");
+    }
+
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<String> handlePostNotFoundException(PostNotFoundException ex) {
         return ResponseEntity.status(404).body(ex.getMessage());
@@ -46,9 +52,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         StringBuilder errorMessage = new StringBuilder();
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            errorMessage.append(error.getDefaultMessage()).append("; ");
-        });
+        ex.getBindingResult().getFieldErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append("; "));
         return ResponseEntity.status(400).body(errorMessage.toString());
     }
 }
