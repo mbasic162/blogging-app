@@ -1,8 +1,12 @@
 package com.example.bloggingapp.exception;
 
+import com.example.bloggingapp.enums.Role;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,7 +40,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException() {
-        return ResponseEntity.status(401).body("Please log in!");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority(Role.ANONYMOUS.getRole()))) {
+            return ResponseEntity.status(401).body("Please log in!");
+        }
+        return ResponseEntity.status(403).body("Access denied!");
     }
 
     @ExceptionHandler(PostNotFoundException.class)
