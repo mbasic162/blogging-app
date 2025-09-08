@@ -33,7 +33,7 @@ public interface UserService {
 
     void checkAllowViewingAuth(User user, String authUsername);
 
-    boolean isBlockedByOrPrivate(User user, String authUsername);
+    boolean isBlockedByOrPrivate(User user, User authUser);
 
     Optional<User> findByUsername(String username);
 

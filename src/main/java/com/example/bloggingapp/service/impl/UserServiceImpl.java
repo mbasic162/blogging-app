@@ -46,46 +46,67 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void follow(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authUser.equals(user)) throw new IllegalArgumentException("You cannot follow yourself!");
-        if (user.getFollowers().contains(authUser))
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.equals(user)) {
+            throw new IllegalArgumentException("You cannot follow yourself!");
+        }
+        if (user.getFollowers().contains(authUser)) {
             throw new IllegalStateException("You already follow this user!");
+        }
         userRepository.follow(user.getId(), authUser.getId());
     }
 
     @Override
     public void unfollow(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authUser.equals(user))
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot unfollow yourself!");
-        if (!authUser.getFollowing().contains(user))
+        }
+        if (!authUser.getFollowing().contains(user)) {
             throw new IllegalStateException("You aren't following this user!");
+        }
         userRepository.unfollow(user.getId(), authUser.getId());
     }
 
     @Override
     public void block(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authUser.equals(user)) throw new IllegalArgumentException("You cannot block yourself!");
-        if (authUser.getBlockedUsers().contains(user))
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (isBlockedByOrPrivate(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
+        if (authUser.equals(user)) {
+            throw new IllegalArgumentException("You cannot block yourself!");
+        }
+        if (authUser.getBlockedUsers().contains(user)) {
             throw new IllegalStateException("You already blocked this user!");
-        if (user.getFollowers().contains(authUser)) userRepository.unfollow(user.getId(), authUser.getId());
-        if (user.getFollowing().contains(authUser)) userRepository.unfollow(authUser.getId(), user.getId());
+        }
+        if (user.getFollowers().contains(authUser)) {
+            userRepository.unfollow(user.getId(), authUser.getId());
+        }
+        if (user.getFollowing().contains(authUser)) {
+            userRepository.unfollow(authUser.getId(), user.getId());
+        }
         userRepository.block(user.getId(), authUser.getId());
     }
 
     @Override
     public void unblock(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authUser.equals(user)) throw new IllegalArgumentException("You cannot unblock yourself!");
-        if (!authUser.getBlockedUsers().contains(user))
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (isBlockedByOrPrivate(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
+        if (authUser.equals(user)) {
+            throw new IllegalArgumentException("You cannot unblock yourself!");
+        }
+        if (!authUser.getBlockedUsers().contains(user)) {
             throw new IllegalStateException("You haven't blocked this user!");
+        }
         userRepository.unblock(user.getId(), authUser.getId());
     }
 
     @Override
     public void tempDelete(String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (authUser.getDeleted()) {
             throw new IllegalStateException("User is already deleted!");
         }
@@ -94,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void undelete(String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (!authUser.getDeleted()) {
             throw new IllegalStateException("User is not deleted!");
         }
@@ -103,7 +124,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void permanentlyDelete(String authUsername, LoginRequest request) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         authManager.authenticate(new UsernamePasswordAuthenticationToken(authUsername, request.password()));
         userRepository.delete(authUser);
     }
@@ -117,15 +138,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void checkAllowViewingAuth(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (((user.getPrivate() && !user.equals(authUser)) || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
             throw new UserNotFoundException("User not found!");
         }
     }
 
     @Override
-    public boolean isBlockedByOrPrivate(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public boolean isBlockedByOrPrivate(User user, User authUser) {
         return user.getPrivate() || user.getBlockedUsers().contains(authUser);
     }
 }

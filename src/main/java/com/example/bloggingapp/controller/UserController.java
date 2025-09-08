@@ -36,9 +36,11 @@ public class UserController {
     @GetMapping("/{username}")
     public ResponseEntity<UserDto> getUser(@PathVariable String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authentication != null && authentication.isAuthenticated())
+        if (authentication != null && authentication.isAuthenticated()) {
             userService.checkAllowViewingAuth(user, authentication.getName());
-        else userService.checkAllowViewing(user);
+        } else {
+            userService.checkAllowViewing(user);
+        }
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
@@ -47,26 +49,31 @@ public class UserController {
         if (!userService.existsByUsername(username)) {
             throw new UserNotFoundException("User not found!");
         }
-        if (authentication != null && authentication.isAuthenticated())
+        if (authentication != null && authentication.isAuthenticated()) {
             return ResponseEntity.ok(postService.findByUsernameAuth(username, authentication.getName()).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+        }
         return ResponseEntity.ok(postService.findByUsername(username).stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")
     public ResponseEntity<Set<UserFollowDto>> getFollowers(@PathVariable String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authentication != null && authentication.isAuthenticated())
+        if (authentication != null && authentication.isAuthenticated()) {
             userService.checkAllowViewingAuth(user, authentication.getName());
-        else userService.checkAllowViewing(user);
+        } else {
+            userService.checkAllowViewing(user);
+        }
         return ResponseEntity.ok(user.getFollowers().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/following")
     public ResponseEntity<Set<UserFollowDto>> getFollowing(@PathVariable String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authentication != null && authentication.isAuthenticated())
+        if (authentication != null && authentication.isAuthenticated()) {
             userService.checkAllowViewingAuth(user, authentication.getName());
-        else userService.checkAllowViewing(user);
+        } else {
+            userService.checkAllowViewing(user);
+        }
         return ResponseEntity.ok(user.getFollowing().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
@@ -94,9 +101,6 @@ public class UserController {
     public ResponseEntity<Void> block(
             @RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (userService.isBlockedByOrPrivate(user, authentication.getName())) {
-            throw new UserNotFoundException("User not found!");
-        }
         userService.block(user, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -106,9 +110,6 @@ public class UserController {
     public ResponseEntity<Void> unblock(
             @RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (userService.isBlockedByOrPrivate(user, authentication.getName())) {
-            throw new UserNotFoundException("User not found!");
-        }
         userService.unblock(user, authentication.getName());
         return ResponseEntity.ok().build();
     }
