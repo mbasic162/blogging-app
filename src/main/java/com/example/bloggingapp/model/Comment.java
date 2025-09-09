@@ -13,7 +13,7 @@ import java.util.Set;
 
 
 @Entity
-@Table(name = "comments", schema = "BloggingApp")
+@Table(name = "comments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,16 +42,14 @@ public class Comment {
     @JoinTable(
             name = "comment_likes",
             joinColumns = @JoinColumn(name = "comment_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> likedBy;
     @ManyToMany
     @JoinTable(
             name = "comment_dislikes",
             joinColumns = @JoinColumn(name = "comment_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> dislikedBy;
 

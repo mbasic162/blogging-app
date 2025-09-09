@@ -29,16 +29,16 @@ public class AuthService {
         }
 
         return userService.save(new User(
-                registerRequest.name(),
                 registerRequest.username(),
                 registerRequest.email(),
                 passwordEncoder.encode(registerRequest.password()),
+                registerRequest.description(),
                 registerRequest.isPrivate()));
     }
 
     public String login(LoginRequest loginRequest) {
-        User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
+        User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         return jwtUtils.generateToken(user.getUsername(), user.getRoles());
     }
 }

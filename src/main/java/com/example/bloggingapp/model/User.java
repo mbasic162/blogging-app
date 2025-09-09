@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "USERS", schema = "BloggingApp")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,14 +22,14 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Size(min = 2, max = 50)
-    private String name;
     @Size(min = 3, max = 20)
     private String username;
     @Email
     @Size(min = 3, max = 50)
     private String email;
     private String password;
+    @Size(max = 200)
+    private String description;
     private final LocalDate createdOn = LocalDate.now();
     @Accessors(prefix = "is")
     private Boolean isPrivate = false;
@@ -47,8 +47,7 @@ public class User {
     @JoinTable(
             name = "followers",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "parent_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "parent_id")
     )
     private Set<User> followers;
 
@@ -59,8 +58,7 @@ public class User {
     @JoinTable(
             name = "blocked_users",
             joinColumns = @JoinColumn(name = "parent_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> blockedUsers;
 
@@ -82,11 +80,11 @@ public class User {
     @ManyToMany(mappedBy = "dislikedBy")
     private Set<Comment> dislikedComments;
 
-    public User(String name, String username, String email, String password, boolean isPrivate) {
-        this.name = name;
+    public User(String username, String email, String password, String description, boolean isPrivate) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.description = description;
         this.isPrivate = isPrivate;
     }
 

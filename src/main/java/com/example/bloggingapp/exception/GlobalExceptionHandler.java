@@ -34,8 +34,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
-        return ResponseEntity.status(401).body(ex.getMessage());
+    public ResponseEntity<String> handleBadCredentialsException() {
+        return ResponseEntity.status(401).body("Incorrect username or password");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

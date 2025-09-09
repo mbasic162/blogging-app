@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "posts", schema = "BloggingApp")
+@Table(name = "posts")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -43,16 +43,14 @@ public class Post {
     @JoinTable(
             name = "post_likes",
             joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> likedBy;
     @ManyToMany
     @JoinTable(
             name = "post_dislikes",
             joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"),
-            schema = "BloggingApp"
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> dislikedBy;
 
