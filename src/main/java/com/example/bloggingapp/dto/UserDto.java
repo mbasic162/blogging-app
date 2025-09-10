@@ -6,6 +6,7 @@ public record UserDto(
         String username,
         String description,
         Set<UserFollowDto> followers,
-        Set<UserFollowDto> following
+        Set<UserFollowDto> following,
+        boolean isBlocked
 ) {
 }

@@ -37,6 +37,13 @@ public class UserController {
     public ResponseEntity<UserDto> getUser(@PathVariable String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authentication != null && authentication.isAuthenticated()) {
+            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+            if (user.getPrivate() || user.getDeleted()) {
+                throw new UserNotFoundException("User not found!");
+            }
+            if (authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser)) {
+                return ResponseEntity.ok(new UserDto(username, null, null, null, true));
+            }
             userService.checkAllowViewingAuth(user, authentication.getName());
         } else {
             userService.checkAllowViewing(user);
