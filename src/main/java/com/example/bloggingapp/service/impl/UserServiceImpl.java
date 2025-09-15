@@ -1,14 +1,19 @@
 package com.example.bloggingapp.service.impl;
 
 
-import com.example.bloggingapp.dto.request.LoginRequest;
+import com.example.bloggingapp.dto.request.EmailChangeRequest;
+import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.repository.UserRepository;
+import com.example.bloggingapp.security.JwtUtils;
 import com.example.bloggingapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,6 +23,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationManager authManager;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
     @Override
     public User save(User user) {
@@ -105,6 +112,78 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public String changeUsername(String newUsername, String authUsername) {
+        if (authUsername.equals(newUsername)) {
+            throw new IllegalArgumentException("New username must be different from the old one!");
+        }
+        if (userRepository.existsByUsernameIgnoreCase(newUsername)) {
+            throw new IllegalStateException("Username is already in use!");
+        }
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        userRepository.changeUsername(authUser, newUsername);
+        return jwtUtils.generateToken(newUsername, authUser.getRoles());
+    }
+
+    @Override
+    public void changeEmail(EmailChangeRequest request, String authUsername) {
+        try {
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(authUsername, request.password()));
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("Incorrect password");
+        }
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.getEmail().equals(request.newEmail())) {
+            throw new IllegalArgumentException("New email must be different from the old one!");
+        }
+        if (userRepository.existsByEmailIgnoreCase(request.newEmail())) {
+            throw new IllegalStateException("Email is already in use!");
+        }
+        userRepository.changeEmail(authUser, request.newEmail());
+    }
+
+    @Override
+    public void changePassword(PasswordChangeRequest request, String authUsername) {
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        try {
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(authUsername, request.password()));
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("Incorrect password");
+        }
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (passwordEncoder.matches(request.newPassword(), authUser.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from the old one!");
+        }
+        userRepository.changePassword(authUser, encodedPassword);
+    }
+
+    @Override
+    public void changeDescription(String newDescription, String authUsername) {
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.getDescription().equals(newDescription)) {
+            throw new IllegalArgumentException("New description must be different from the old one!");
+        }
+        userRepository.changeDescription(authUser, newDescription);
+    }
+
+    @Override
+    public void goPrivate(String authUsername) {
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.getPrivate()) {
+            throw new IllegalStateException("You are already private!");
+        }
+        userRepository.goPrivate(authUser);
+    }
+
+    @Override
+    public void goPublic(String authUsername) {
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (!authUser.getPrivate()) {
+            throw new IllegalStateException("You are already public!");
+        }
+        userRepository.goPublic(authUser);
+    }
+
+    @Override
     public void tempDelete(String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (authUser.getDeleted()) {
@@ -123,9 +202,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void permanentlyDelete(String authUsername, LoginRequest request) {
+    public void permanentlyDelete(String authUsername, String password) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(authUsername, request.password()));
+        try {
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(authUsername, password));
+        } catch (AuthenticationException e) {
+            throw new BadCredentialsException("Incorrect password!");
+        }
         userRepository.delete(authUser);
     }
 

@@ -27,12 +27,15 @@ public class AuthService {
         if (userService.existsByEmailIgnoreCase(registerRequest.email())) {
             throw new IllegalArgumentException("Email is already in use!");
         }
-
+        String description = registerRequest.description();
+        if (description == null) {
+            description = "";
+        }
         return userService.save(new User(
                 registerRequest.username(),
                 registerRequest.email(),
                 passwordEncoder.encode(registerRequest.password()),
-                registerRequest.description(),
+                description,
                 registerRequest.isPrivate()));
     }
 

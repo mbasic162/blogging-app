@@ -1,6 +1,7 @@
 package com.example.bloggingapp.service;
 
-import com.example.bloggingapp.dto.request.LoginRequest;
+import com.example.bloggingapp.dto.request.EmailChangeRequest;
+import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.model.User;
 
 import java.util.Optional;
@@ -23,11 +24,23 @@ public interface UserService {
 
     void unblock(User user, String authUsername);
 
+    String changeUsername(String newUsername, String authUsername);
+
+    void changeEmail(EmailChangeRequest request, String authUsername);
+
+    void changePassword(PasswordChangeRequest request, String authUsername);
+
+    void changeDescription(String newDescription, String authUsername);
+
+    void goPrivate(String authUsername);
+
+    void goPublic(String authUsername);
+
     void tempDelete(String authUsername);
 
     void undelete(String authUsername);
 
-    void permanentlyDelete(String authUsername, LoginRequest request);
+    void permanentlyDelete(String authUsername, String password);
 
     void checkAllowViewing(User user);
 

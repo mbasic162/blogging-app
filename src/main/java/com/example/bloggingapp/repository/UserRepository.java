@@ -26,6 +26,36 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Transactional
     @Modifying
+    @Query(value = "UPDATE User u SET u.username=:new_username WHERE u=:user")
+    void changeUsername(User user, @Param("new_username") String newUsername);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.email=:new_email WHERE u=:user")
+    void changeEmail(User user, @Param("new_email") String newEmail);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.password=:new_password WHERE u=:user")
+    void changePassword(User user, @Param("new_password") String newPassword);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.description=:new_description WHERE u=:user")
+    void changeDescription(User user, @Param("new_description") String newDescription);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.isPrivate=true WHERE u=:user")
+    void goPrivate(User user);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE User u SET u.isPrivate=false WHERE u=:user")
+    void goPublic(User user);
+
+    @Transactional
+    @Modifying
     @Query(value = "INSERT INTO followers (user_id, parent_id) VALUES (:user_id, :parent_id)", nativeQuery = true)
     void follow(@Param("user_id") Long userId, @Param("parent_id") Long parentId);
 

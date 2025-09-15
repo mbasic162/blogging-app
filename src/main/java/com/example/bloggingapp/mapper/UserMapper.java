@@ -10,7 +10,8 @@ import org.mapstruct.factory.Mappers;
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    @Mapping(target = "isBlocked", constant = "false")
+    @Mapping(target = "isAuthUserBlocked", constant = "false")
+    @Mapping(target = "isUserBlocked", constant = "false")
     UserDto toDto(User user);
 
     User toEntity(UserDto userDto);

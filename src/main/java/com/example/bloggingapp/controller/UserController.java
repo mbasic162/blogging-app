@@ -3,7 +3,8 @@ package com.example.bloggingapp.controller;
 import com.example.bloggingapp.dto.PostDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.UserFollowDto;
-import com.example.bloggingapp.dto.request.LoginRequest;
+import com.example.bloggingapp.dto.request.EmailChangeRequest;
+import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.PostMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
@@ -13,6 +14,8 @@ import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,8 +44,11 @@ public class UserController {
             if (user.getPrivate() || user.getDeleted()) {
                 throw new UserNotFoundException("User not found!");
             }
-            if (authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser)) {
-                return ResponseEntity.ok(new UserDto(username, null, null, null, true));
+            if (authUser.getBlockedUsers().contains(user)) {
+                return ResponseEntity.ok(new UserDto(username, null, null, null, true, false));
+            }
+            if (user.getBlockedUsers().contains(authUser)) {
+                return ResponseEntity.ok(new UserDto(username, null, null, null, false, true));
             }
             userService.checkAllowViewingAuth(user, authentication.getName());
         } else {
@@ -140,8 +146,57 @@ public class UserController {
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
-            Authentication authentication, @RequestBody @Valid LoginRequest request) {
-        userService.permanentlyDelete(authentication.getName(), request);
+            Authentication authentication, @RequestParam(name = "password") @NotBlank(message = "Password cannot be blank!") String password) {
+        userService.permanentlyDelete(authentication.getName(), password);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeUsername")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> changeUsername(
+            @RequestParam(name = "newUsername")
+            @NotBlank(message = "Please provide a username")
+            @Pattern(regexp = "^(?!.*('|\"|;|\\|/|%|--| )).*$", message = "Username cannot contain special characters or spaces!")
+            @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername, Authentication authentication) {
+        String newToken = userService.changeUsername(newUsername, authentication.getName());
+        return ResponseEntity.ok().body(newToken);
+    }
+
+    @PostMapping("/changeEmail")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeEmail(
+            @RequestBody @Valid EmailChangeRequest request, Authentication authentication) {
+        userService.changeEmail(request, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changePassword")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changePassword(
+            @RequestBody @Valid PasswordChangeRequest request, Authentication authentication) {
+        userService.changePassword(request, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeDescription")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeDescription(
+            @RequestParam(name = "newDescription") @Size(max = 200, message = "New description must be at most 200 characters!") String newDescription, Authentication authentication) {
+        userService.changeDescription(newDescription, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/goPrivate")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> goPrivate(Authentication authentication) {
+        userService.goPrivate(authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/goPublic")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> goPublic(Authentication authentication) {
+        userService.goPublic(authentication.getName());
         return ResponseEntity.ok().build();
     }
 }

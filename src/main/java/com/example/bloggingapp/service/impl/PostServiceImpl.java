@@ -57,7 +57,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void checkAllowViewing(Post post) {
         User user = post.getUser();
-        if (post.getHidden() || post.getDeleted() || (user.getPrivate() && !post.getShareableDespitePrivateUser())) {
+        if (post.getHidden() || post.getDeleted() || user.getPrivate()) {
             throw new PostNotFoundException("Post not found!");
         }
     }
@@ -66,7 +66,7 @@ public class PostServiceImpl implements PostService {
     public void checkAllowViewingAuth(Post post, String authUsername) {
         User user = post.getUser();
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (post.getHidden() && !authUser.equals(user) || post.getDeleted() || user.getPrivate() && !post.getShareableDespitePrivateUser() && !user.equals(authUser) || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+        if (post.getHidden() && !authUser.equals(user) || post.getDeleted() || user.getPrivate() && !user.equals(authUser) || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
             throw new PostNotFoundException("Post not found!");
         }
     }
