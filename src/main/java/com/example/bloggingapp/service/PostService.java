@@ -34,6 +34,10 @@ public interface PostService {
 
     void removeDislike(String authUsername, Long postId);
 
+    void changeTitle(String authUsername, Long postId, String newTitle);
+
+    void changeContent(String authUsername, Long postId, String newContent);
+
     void tempDelete(String authUsername, Long postId);
 
     void undelete(String authUsername, Long postId);

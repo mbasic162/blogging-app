@@ -143,6 +143,34 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public void changeTitle(String authUsername, Long postId, String newTitle) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        checkAllowViewingAuth(post, authUsername);
+        if (!authUser.equals(post.getUser())) {
+            throw new IllegalStateException("You can only change your own posts!");
+        }
+        if (post.getTitle().equals(newTitle)) {
+            throw new IllegalArgumentException("New title must be different from the old one!");
+        }
+        postRepository.changeTitle(post, newTitle);
+    }
+
+    @Override
+    public void changeContent(String authUsername, Long postId, String newContent) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        checkAllowViewingAuth(post, authUsername);
+        if (!authUser.equals(post.getUser())) {
+            throw new IllegalStateException("You can only change your own posts!");
+        }
+        if (post.getContent().equals(newContent)) {
+            throw new IllegalArgumentException("New content must be different from the old one!");
+        }
+        postRepository.changeContent(post, newContent);
+    }
+
+    @Override
     public void tempDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));

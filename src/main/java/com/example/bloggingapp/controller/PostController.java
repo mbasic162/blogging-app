@@ -14,12 +14,15 @@ import com.example.bloggingapp.service.CommentService;
 import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
+@Validated
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
@@ -181,6 +185,29 @@ public class PostController {
             Authentication authentication,
             @RequestParam(name = "postId") @NotNull Long postId) {
         postService.permanentlyDelete(authentication.getName(), postId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeTitle")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeTitle(
+            Authentication authentication, @RequestParam(name = "postId") @NotNull Long postId, @RequestParam(name = "newTitle") @NotBlank(message = "Title cannot be blank!") @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
+    ) {
+        postService.changeTitle(authentication.getName(), postId, newTitle);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeContent")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeContent(
+            Authentication authentication,
+            @RequestParam(name = "postId")
+            @NotNull Long postId,
+            @RequestParam(name = "newContent")
+            @NotBlank(message = "Content cannot be blank!")
+            @Size(min = 100, max = 15000, message = "Content must be between 100 and 15000 characters long!") String newContent
+    ) {
+        postService.changeContent(authentication.getName(), postId, newContent);
         return ResponseEntity.ok().build();
     }
 }
