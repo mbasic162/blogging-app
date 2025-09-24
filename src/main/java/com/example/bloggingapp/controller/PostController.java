@@ -40,7 +40,7 @@ public class PostController {
     private final PostMapper postMapper = PostMapper.INSTANCE;
 
     @PostMapping("/")
-    public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam("number") int number, Authentication authentication) {
+    public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam int number, Authentication authentication) {
         Set<Post> posts;
         if (authentication != null && authentication.isAuthenticated()) {
             posts = postService.findNAuth(number, authentication.getName());
@@ -62,7 +62,7 @@ public class PostController {
     }
 
     @PostMapping("/uri")
-    public ResponseEntity<String> getUri(@RequestParam("postId") Long postId, @RequestParam("title") String title, Authentication authentication) {
+    public ResponseEntity<String> getUri(@RequestParam Long postId, @RequestParam String title, Authentication authentication) {
         Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         String titleById = post.getTitle();
         if (!titleById.equals(title)) {
@@ -111,7 +111,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> like(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.like(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -120,7 +120,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> removeLike(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.removeLike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -129,7 +129,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> dislike(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.dislike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -138,7 +138,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> removeDislike(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.removeDislike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -147,7 +147,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> tempDelete(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.tempDelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -156,7 +156,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> undelete(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.undelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -165,7 +165,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> hide(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.hide(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -174,7 +174,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unhide(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.unhide(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -183,7 +183,7 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
             Authentication authentication,
-            @RequestParam(name = "postId") @NotNull Long postId) {
+            @RequestParam @NotNull Long postId) {
         postService.permanentlyDelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -191,7 +191,7 @@ public class PostController {
     @PostMapping("/changeTitle")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeTitle(
-            Authentication authentication, @RequestParam(name = "postId") @NotNull Long postId, @RequestParam(name = "newTitle") @NotBlank(message = "Title cannot be blank!") @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
+            Authentication authentication, @RequestParam @NotNull Long postId, @RequestParam @NotBlank(message = "Title cannot be blank!") @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
     ) {
         postService.changeTitle(authentication.getName(), postId, newTitle);
         return ResponseEntity.ok().build();
@@ -201,9 +201,9 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeContent(
             Authentication authentication,
-            @RequestParam(name = "postId")
+            @RequestParam
             @NotNull Long postId,
-            @RequestParam(name = "newContent")
+            @RequestParam
             @NotBlank(message = "Content cannot be blank!")
             @Size(min = 100, max = 15000, message = "Content must be between 100 and 15000 characters long!") String newContent
     ) {

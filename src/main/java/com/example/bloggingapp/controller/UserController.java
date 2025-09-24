@@ -94,7 +94,7 @@ public class UserController {
 
     @PostMapping("/follow")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> follow(@RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+    public ResponseEntity<Void> follow(@RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.checkAllowViewingAuth(user, authentication.getName());
         userService.follow(user, authentication.getName());
@@ -104,7 +104,7 @@ public class UserController {
     @PostMapping("/unfollow")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unfollow(
-            @RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.checkAllowViewingAuth(user, authentication.getName());
         userService.unfollow(user, authentication.getName());
@@ -114,7 +114,7 @@ public class UserController {
     @PostMapping("/block")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> block(
-            @RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.block(user, authentication.getName());
         return ResponseEntity.ok().build();
@@ -123,7 +123,7 @@ public class UserController {
     @PostMapping("/unblock")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unblock(
-            @RequestParam(name = "username") @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.unblock(user, authentication.getName());
         return ResponseEntity.ok().build();
@@ -148,7 +148,7 @@ public class UserController {
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
-            Authentication authentication, @RequestParam(name = "password") @NotBlank(message = "Password cannot be blank!") String password) {
+            Authentication authentication, @RequestParam @NotBlank(message = "Password cannot be blank!") String password) {
         userService.permanentlyDelete(authentication.getName(), password);
         return ResponseEntity.ok().build();
     }
@@ -156,7 +156,7 @@ public class UserController {
     @PostMapping("/changeUsername")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changeUsername(
-            @RequestParam(name = "newUsername")
+            @RequestParam
             @NotBlank(message = "Please provide a username")
             @Pattern(regexp = "^(?!.*('|\"|;|\\|/|%|--| )).*$", message = "Username cannot contain special characters or spaces!")
             @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername, Authentication authentication) {
@@ -183,7 +183,7 @@ public class UserController {
     @PostMapping("/changeDescription")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeDescription(
-            @RequestParam(name = "newDescription") @Size(max = 200, message = "Description must be at most 200 characters!") String newDescription, Authentication authentication) {
+            @RequestParam @Size(max = 200, message = "Description must be at most 200 characters!") String newDescription, Authentication authentication) {
         userService.changeDescription(newDescription, authentication.getName());
         return ResponseEntity.ok().build();
     }

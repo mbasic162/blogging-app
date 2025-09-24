@@ -37,7 +37,7 @@ public class CommentController {
     }
 
     @PostMapping("/uri")
-    public ResponseEntity<String> getUri(@RequestParam(name = "commentId") @NotNull Long commentId, @RequestParam(name = "content") @NotNull String content, Authentication authentication) {
+    public ResponseEntity<String> getUri(@RequestParam @NotNull Long commentId, @RequestParam @NotNull String content, Authentication authentication) {
         Comment comment = commentService.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         String contentById = comment.getContent();
         if (!contentById.equals(content)) {
@@ -81,56 +81,56 @@ public class CommentController {
 
     @PostMapping("/like")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> like(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> like(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.like(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/removeLike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> removeLike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> removeLike(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.removeLike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/dislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> dislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> dislike(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.dislike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/removeDislike")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> removeDislike(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> removeDislike(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.removeDislike(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> tempDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> tempDelete(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.tempDelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> undelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> undelete(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.undelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/hide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> hide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> hide(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.hide(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/unhide")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> unhide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> unhide(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.unhide(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
@@ -139,8 +139,8 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeContent(
             Authentication authentication,
-            @RequestParam(name = "commentId") @NotNull Long commentId,
-            @RequestParam(name = "newContent")
+            @RequestParam @NotNull Long commentId,
+            @RequestParam
             @NotBlank(message = "Content cannot be blank!")
             @Size(min = 1, max = 1000, message = "Content must be between 1 and 1000 characters!") String newContent) {
         commentService.changeContent(authentication.getName(), commentId, newContent);
@@ -149,7 +149,7 @@ public class CommentController {
 
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> permanentlyDelete(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
+    public ResponseEntity<Void> permanentlyDelete(Authentication authentication, @RequestParam @NotNull Long commentId) {
         commentService.permanentlyDelete(authentication.getName(), commentId);
         return ResponseEntity.ok().build();
     }
