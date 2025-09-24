@@ -7,7 +7,9 @@ import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.service.CommentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -130,6 +132,18 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unhide(Authentication authentication, @RequestParam(name = "commentId") @NotNull Long commentId) {
         commentService.unhide(authentication.getName(), commentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeContent")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeContent(
+            Authentication authentication,
+            @RequestParam(name = "commentId") @NotNull Long commentId,
+            @RequestParam(name = "newContent")
+            @NotBlank(message = "Content cannot be blank!")
+            @Size(min = 1, max = 1000, message = "Content must be between 1 and 1000 characters!") String newContent) {
+        commentService.changeContent(authentication.getName(), commentId, newContent);
         return ResponseEntity.ok().build();
     }
 

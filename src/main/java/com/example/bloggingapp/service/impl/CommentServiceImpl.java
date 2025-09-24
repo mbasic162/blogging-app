@@ -280,4 +280,18 @@ public class CommentServiceImpl implements CommentService {
         }
         commentRepository.unhide(comment);
     }
+
+    @Override
+    public void changeContent(String authUsername, Long commentId, String newContent) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        checkAllowViewingAuth(comment, authUsername);
+        if (!comment.getUser().equals(authUser)) {
+            throw new IllegalStateException("You can only change your own comments!");
+        }
+        if (comment.getContent().equals(newContent)) {
+            throw new IllegalArgumentException("New content must be different from the old one!");
+        }
+        commentRepository.changeContent(comment, newContent);
+    }
 }

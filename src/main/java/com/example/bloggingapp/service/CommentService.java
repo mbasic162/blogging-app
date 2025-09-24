@@ -54,4 +54,6 @@ public interface CommentService {
     void hide(String authUsername, Long commentId);
 
     void unhide(String authUsername, Long commentId);
+
+    void changeContent(String authUsername, Long commentId, String newContent);
 }

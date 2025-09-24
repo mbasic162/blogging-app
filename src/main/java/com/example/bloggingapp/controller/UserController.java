@@ -183,7 +183,7 @@ public class UserController {
     @PostMapping("/changeDescription")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeDescription(
-            @RequestParam(name = "newDescription") @Size(max = 200, message = "New description must be at most 200 characters!") String newDescription, Authentication authentication) {
+            @RequestParam(name = "newDescription") @Size(max = 200, message = "Description must be at most 200 characters!") String newDescription, Authentication authentication) {
         userService.changeDescription(newDescription, authentication.getName());
         return ResponseEntity.ok().build();
     }
