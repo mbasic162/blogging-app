@@ -78,7 +78,8 @@ public class CommentServiceImpl implements CommentService {
     public void filterComments(Set<Comment> comments) {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
-            if (comment.getDeleted() || comment.getHidden() || comment.getUser().getPrivate()) {
+            User user = comment.getUser();
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
                 i.remove();
             } else {
                 filterComments(comment.getComments());
@@ -90,7 +91,8 @@ public class CommentServiceImpl implements CommentService {
     public void filterCommentsAuth(Set<Comment> comments, User authUser) {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
-            if (comment.getDeleted() || comment.getHidden() || comment.getUser().getPrivate() || comment.getUser().getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(comment.getUser())) {
+            User user = comment.getUser();
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
                 i.remove();
             } else {
                 filterCommentsAuth(comment.getComments(), authUser);
@@ -101,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void checkAllowViewing(Comment comment) {
         User user = comment.getUser();
-        if (comment.getHidden() || comment.getDeleted() || user.getPrivate()) {
+        if (comment.getHidden() || comment.getDeleted() || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
             throw new CommentNotFoundException("Comment not found!");
         }
     }
@@ -110,7 +112,7 @@ public class CommentServiceImpl implements CommentService {
     public void checkAllowViewingAuth(Comment comment, String authUsername) {
         User user = comment.getUser();
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if ((comment.getHidden() && !user.equals(authUser)) || comment.getDeleted() || user.getPrivate() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+        if ((comment.getHidden() && !user.equals(authUser)) || comment.getDeleted() || user.getPrivate() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
             throw new CommentNotFoundException("Comment not found!");
         }
     }

@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void block(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (isBlockedByOrPrivate(user, authUser)) {
+        if (isBlockedByOrPrivate(user, authUser) || user.getDeleted() || !user.getEnabled()) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void unblock(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (isBlockedByOrPrivate(user, authUser)) {
+        if (isBlockedByOrPrivate(user, authUser) || user.getDeleted() || !user.getEnabled()) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -213,8 +213,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void disable(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!user.getEnabled()) {
+            throw new IllegalStateException("User is already disabled!");
+        }
+        userRepository.disable(user);
+    }
+
+    @Override
+    public void enable(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (user.getEnabled()) {
+            throw new IllegalStateException("User is already enabled!");
+        }
+        userRepository.enable(user);
+    }
+
+    @Override
     public void checkAllowViewing(User user) {
-        if (user.getPrivate()) {
+        if (user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
             throw new UserNotFoundException("User not found!");
         }
     }
@@ -222,7 +240,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void checkAllowViewingAuth(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (((user.getPrivate() && !user.equals(authUser)) || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
+        if (((user.getPrivate() && !user.equals(authUser)) || user.getDeleted() || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
             throw new UserNotFoundException("User not found!");
         }
     }

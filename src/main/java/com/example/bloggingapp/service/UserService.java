@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface UserService {
 
+    Optional<User> findByUsername(String username);
+
     User save(User user);
 
     boolean existsByUsername(String username);
@@ -42,12 +44,14 @@ public interface UserService {
 
     void permanentlyDelete(String authUsername, String password);
 
+    void disable(String username);
+
+    void enable(String username);
+
     void checkAllowViewing(User user);
 
     void checkAllowViewingAuth(User user, String authUsername);
 
     boolean isBlockedByOrPrivate(User user, User authUser);
-
-    Optional<User> findByUsername(String username);
 
 }

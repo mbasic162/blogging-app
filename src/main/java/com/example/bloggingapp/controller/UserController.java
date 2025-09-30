@@ -43,7 +43,7 @@ public class UserController {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authentication != null && authentication.isAuthenticated()) {
             User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-            if (user.getPrivate() || user.getDeleted()) {
+            if (user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
                 throw new UserNotFoundException("User not found!");
             }
             if (authUser.getBlockedUsers().contains(user)) {
