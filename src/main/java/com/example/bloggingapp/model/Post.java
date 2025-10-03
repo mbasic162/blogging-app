@@ -36,6 +36,8 @@ public class Post {
     private Boolean isDeleted = false;
     @Accessors(prefix = "is")
     private Boolean isHidden = false;
+    @Accessors(prefix = "is")
+    private Boolean isDeletedByAdmin = false;
     @ManyToMany
     @JoinTable(
             name = "post_likes",

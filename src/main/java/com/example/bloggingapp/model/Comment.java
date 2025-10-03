@@ -38,6 +38,8 @@ public class Comment {
     private Boolean isDeleted = false;
     @Accessors(prefix = "is")
     private Boolean isHidden = false;
+    @Accessors(prefix = "is")
+    private Boolean isDeletedByAdmin = false;
     @ManyToMany
     @JoinTable(
             name = "comment_likes",

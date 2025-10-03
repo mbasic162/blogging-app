@@ -1,5 +1,6 @@
 package com.example.bloggingapp.controller;
 
+import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminController {
     private final UserService userService;
+    private final PostService postService;
 
     @PostMapping("/disable")
     public ResponseEntity<Void> disable(String username) {
@@ -22,6 +24,12 @@ public class AdminController {
     @PostMapping("/enable")
     public ResponseEntity<Void> enable(String username) {
         userService.enable(username);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/deletePost")
+    public ResponseEntity<Void> deletePost(Long postId) {
+        postService.tempDeleteByAdmin(postId);
         return ResponseEntity.ok().build();
     }
 }

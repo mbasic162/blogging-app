@@ -41,12 +41,11 @@ public class PostController {
 
     @PostMapping("/")
     public ResponseEntity<Set<PostDto>> getNPosts(@RequestParam int number, Authentication authentication) {
-        Set<Post> posts;
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            posts = postService.findNAuth(number, authentication.getName());
-        } else {
-            posts = postService.findN(number);
+            authUsername = authentication.getName();
         }
+        Set<Post> posts = postService.findN(number, authUsername);
         return ResponseEntity.ok(posts.stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
@@ -62,31 +61,35 @@ public class PostController {
     }
 
     @PostMapping("/uri")
-    public ResponseEntity<String> getUri(@RequestParam Long postId, @RequestParam String title, Authentication authentication) {
+    public ResponseEntity<String> getUri(@RequestParam String title, @RequestParam Long postId, Authentication authentication) {
         Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         String titleById = post.getTitle();
-        if (!titleById.equals(title)) {
-            ResponseEntity.notFound().build();
-        }
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            postService.checkAllowViewingAuth(post, authentication.getName());
-        } else {
-            postService.checkAllowViewing(post);
+            authUsername = authentication.getName();
         }
-        return ResponseEntity.ok(postService.getUriByIdAndTitle(postId, title));
+        if (!titleById.equals(title)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        if (!postService.isViewable(post, authUsername)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        return ResponseEntity.ok(postService.getUriByTitleAndId(title, postId));
     }
 
     @GetMapping("/{post_uri}")
     public ResponseEntity<PostDto> getPost(
             @PathVariable(name = "post_uri") @NotNull String postUri, Authentication authentication) {
         Post post = postService.findById(postService.getIdByUri(postUri)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!postService.getUriByIdAndTitle(post.getId(), post.getTitle()).equals(postUri)) {
-            return ResponseEntity.notFound().build();
-        }
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            postService.checkAllowViewingAuth(post, authentication.getName());
-        } else {
-            postService.checkAllowViewing(post);
+            authUsername = authentication.getName();
+        }
+        if (!postService.getUriByTitleAndId(post.getTitle(), post.getId()).equals(postUri)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        if (!postService.isViewable(post, authUsername)) {
+            throw new PostNotFoundException("Post not found!");
         }
         return ResponseEntity.ok(postMapper.toDto(post));
     }
@@ -97,11 +100,16 @@ public class PostController {
         Long postId = postService.getIdByUri(postUri);
         Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         Set<Comment> comments;
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            postService.checkAllowViewingAuth(post, authentication.getName());
+            authUsername = authentication.getName();
+        }
+        if (!postService.isViewable(post, authUsername)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        if (authentication != null && authentication.isAuthenticated()) {
             comments = commentService.findByParentPostAuth(post, authentication.getName());
         } else {
-            postService.checkAllowViewing(post);
             comments = commentService.findByParentPost(post);
         }
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));

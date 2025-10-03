@@ -14,16 +14,19 @@ import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @Query(value = "SELECT p FROM Post p WHERE p.user.username=:username AND p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false AND p.user.isEnabled = true")
-    Set<Post> findByUsername(String username);
+    @Query(value = "SELECT p FROM Post p WHERE p.user=:user AND p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin = false AND p.user.isPrivate = false AND p.user.isEnabled = true")
+    Set<Post> findByUser(User user);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.user.username=:username AND p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu.id=:auth_id) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2.id=:auth_id AND bu2=p.user)")
-    Set<Post> findByUsernameAuth(String username, @Param("auth_id") Long authId);
+    @Query(value = "SELECT p FROM Post p WHERE p.user=:user AND p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user)")
+    Set<Post> findByUserAuth(User user, @Param("auth_user") User authUser);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
+    @Query(value = "SELECT p from Post p WHERE p.user=:auth_user")
+    Set<Post> findBySelf(@Param("auth_user") User authUser);
+
+    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
     Set<Post> findN(Limit n);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
+    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
     Set<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
 
     @Transactional
@@ -80,4 +83,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query(value = "UPDATE Post p SET p.isHidden = false WHERE p = :post")
     void unhide(Post post);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE Post p SET p.isDeletedByAdmin = true WHERE p = :post")
+    void tempDeleteByAdmin(Post post);
 }

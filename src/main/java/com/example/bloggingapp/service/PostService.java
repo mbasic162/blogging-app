@@ -6,25 +6,19 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface PostService {
-    Set<Post> findByUsername(String username);
-
-    Set<Post> findByUsernameAuth(String username, String authUsername);
+    Set<Post> findByUsername(String username, String authUsername);
 
     Optional<Post> findById(Long id);
 
     Post save(Post post);
 
-    Set<Post> findN(int n);
+    Set<Post> findN(int n, String authUsername);
 
-    Set<Post> findNAuth(int n, String authUsername);
-
-    String getUriByIdAndTitle(Long postId, String title);
+    String getUriByTitleAndId(String title, Long postId);
 
     Long getIdByUri(String uri);
 
-    void checkAllowViewing(Post post);
-
-    void checkAllowViewingAuth(Post post, String authUsername);
+    boolean isViewable(Post post, String authUsername);
 
     void like(String authUsername, Long postId);
 
@@ -47,4 +41,6 @@ public interface PostService {
     void hide(String authUsername, Long postId);
 
     void unhide(String authUsername, Long postId);
+
+    void tempDeleteByAdmin(Long postId);
 }

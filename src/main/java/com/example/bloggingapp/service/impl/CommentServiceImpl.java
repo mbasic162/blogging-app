@@ -44,7 +44,9 @@ public class CommentServiceImpl implements CommentService {
         }
         if (request.parentPostId() != null) {
             Post post = postService.findById(request.parentPostId()).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-            postService.checkAllowViewingAuth(post, authUsername);
+            if (!postService.isViewable(post, authUsername)) {
+                throw new PostNotFoundException("Post not found!");
+            }
             comment = new Comment(request.content(), authUser, post);
         } else {
             Comment parentComment = findById(request.parentCommentId()).orElseThrow(() -> new CommentNotFoundException("Parent comment not found!"));

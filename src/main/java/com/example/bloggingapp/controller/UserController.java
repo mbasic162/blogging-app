@@ -64,10 +64,11 @@ public class UserController {
         if (!userService.existsByUsername(username)) {
             throw new UserNotFoundException("User not found!");
         }
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            return ResponseEntity.ok(postService.findByUsernameAuth(username, authentication.getName()).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+            authUsername = authentication.getName();
         }
-        return ResponseEntity.ok(postService.findByUsername(username).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+        return ResponseEntity.ok(postService.findByUsername(username, authUsername).stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")
