@@ -88,4 +88,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query(value = "UPDATE Post p SET p.isDeletedByAdmin = true WHERE p = :post")
     void tempDeleteByAdmin(Post post);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE Post p SET p.isDeletedByAdmin = false WHERE p = :post")
+    void undeleteByAdmin(Post post);
 }

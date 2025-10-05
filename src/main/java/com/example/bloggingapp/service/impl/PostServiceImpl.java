@@ -188,7 +188,7 @@ public class PostServiceImpl implements PostService {
     public void tempDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (authUser.getBlockedUsers().contains(post.getUser()) || post.getUser().getBlockedUsers().contains(authUser) || (post.getHidden() && !post.getUser().equals(authUser))) {
+        if (!isViewable(post, authUsername)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -202,9 +202,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void undelete(String authUsername, Long postId) {
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!post.getUser().equals(authUser)) {
+        if (!isViewable(post, authUsername)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getDeleted()) {
@@ -259,8 +258,17 @@ public class PostServiceImpl implements PostService {
     public void tempDeleteByAdmin(Long postId) {
         Post post = findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         if (post.getDeletedByAdmin()) {
-            throw new IllegalStateException("This post is already deleted by admin!");
+            throw new IllegalStateException("This post is already deleted by an admin!");
         }
         postRepository.tempDeleteByAdmin(post);
+    }
+
+    @Override
+    public void undeleteByAdmin(Long postId) {
+        Post post = findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        if (!post.getDeletedByAdmin()) {
+            throw new IllegalStateException("This post is not deleted by an admin!");
+        }
+        postRepository.undeleteByAdmin(post);
     }
 }

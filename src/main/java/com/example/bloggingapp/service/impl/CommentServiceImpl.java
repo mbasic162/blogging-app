@@ -37,10 +37,10 @@ public class CommentServiceImpl implements CommentService {
         Comment comment;
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (request.parentPostId() == null && request.parentCommentId() == null) {
-            throw new IllegalArgumentException("Either postId or commentId must be provided!");
+            throw new IllegalArgumentException("Either parent post or parent comment must be provided!");
         }
         if (request.parentPostId() != null && request.parentCommentId() != null) {
-            throw new IllegalArgumentException("Only one of postId or commentId should be provided!");
+            throw new IllegalArgumentException("Only one of parent post or parent comment should be provided!");
         }
         if (request.parentPostId() != null) {
             Post post = postService.findById(request.parentPostId()).orElseThrow(() -> new PostNotFoundException("Post not found!"));
@@ -50,7 +50,9 @@ public class CommentServiceImpl implements CommentService {
             comment = new Comment(request.content(), authUser, post);
         } else {
             Comment parentComment = findById(request.parentCommentId()).orElseThrow(() -> new CommentNotFoundException("Parent comment not found!"));
-            checkAllowViewingAuth(parentComment, authUsername);
+            if (!isViewable(parentComment, authUsername)) {
+                throw new CommentNotFoundException("Parent comment not found!");
+            }
             comment = new Comment(request.content(), authUser, parentComment.getParentPost(), parentComment);
         }
         return save(comment);
@@ -81,7 +83,7 @@ public class CommentServiceImpl implements CommentService {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
             User user = comment.getUser();
-            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled()) {
                 i.remove();
             } else {
                 filterComments(comment.getComments());
@@ -94,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
             User user = comment.getUser();
-            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
                 i.remove();
             } else {
                 filterCommentsAuth(comment.getComments(), authUser);
@@ -103,49 +105,39 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void checkAllowViewing(Comment comment) {
+    public boolean isViewable(Comment comment, String authUsername) {
         User user = comment.getUser();
-        if (comment.getHidden() || comment.getDeleted() || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
-            throw new CommentNotFoundException("Comment not found!");
+        if (authUsername.isEmpty()) {
+            return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && !user.getPrivate() && !user.getDeleted() && user.getEnabled();
         }
-    }
-
-    @Override
-    public void checkAllowViewingAuth(Comment comment, String authUsername) {
-        User user = comment.getUser();
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if ((comment.getHidden() && !user.equals(authUser)) || comment.getDeleted() || user.getPrivate() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
-            throw new CommentNotFoundException("Comment not found!");
+        if (authUser.equals(user)) {
+            return true;
         }
+        return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && !user.getPrivate() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
     }
 
     @Override
-    public Set<Comment> findByParentPost(Post post) {
+    public Set<Comment> findByParentPost(Post post, String authUsername) {
         Set<Comment> comments = commentRepository.findByParentPost(post);
-        filterComments(comments);
-        return comments;
-
-    }
-
-    @Override
-    public Set<Comment> findByParentPostAuth(Post post, String authUsername) {
+        if (authUsername.isEmpty()) {
+            filterComments(comments);
+            return comments;
+        }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        Set<Comment> comments = commentRepository.findByParentPost(post);
         filterCommentsAuth(comments, authUser);
         return comments;
+
     }
 
     @Override
-    public Set<Comment> findByParentComment(Comment comment) {
+    public Set<Comment> findByParentComment(Comment comment, String authUsername) {
         Set<Comment> comments = commentRepository.findByParentComment(comment);
-        filterComments(comments);
-        return comments;
-    }
-
-    @Override
-    public Set<Comment> findByParentCommentAuth(Comment comment, String authUsername) {
+        if (authUsername.isEmpty()) {
+            filterComments(comments);
+            return comments;
+        }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        Set<Comment> comments = commentRepository.findByParentComment(comment);
         filterCommentsAuth(comments, authUser);
         return comments;
     }
@@ -159,7 +151,9 @@ public class CommentServiceImpl implements CommentService {
     public void like(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (comment.getLikedBy().contains(authUser)) {
             throw new IllegalStateException("You already liked this comment!");
         }
@@ -176,7 +170,9 @@ public class CommentServiceImpl implements CommentService {
     public void removeLike(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getLikedBy().contains(authUser)) {
             throw new IllegalStateException("You haven't liked this comment!");
         }
@@ -189,7 +185,9 @@ public class CommentServiceImpl implements CommentService {
     public void dislike(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (comment.getDislikedBy().contains(authUser)) {
             throw new IllegalStateException("You already disliked this comment!");
         }
@@ -206,7 +204,9 @@ public class CommentServiceImpl implements CommentService {
     public void removeDislike(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getDislikedBy().contains(authUser)) {
             throw new IllegalStateException("You haven't disliked this comment!");
         }
@@ -218,7 +218,7 @@ public class CommentServiceImpl implements CommentService {
     public void tempDelete(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (authUser.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(authUser)) {
+        if (!isViewable(comment, authUsername)) {
             throw new CommentNotFoundException("Comment not found!");
         }
         if (!comment.getUser().equals(authUser)) {
@@ -232,13 +232,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void undelete(String authUsername, Long commentId) {
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (authUser.getBlockedUsers().contains(comment.getUser()) || comment.getUser().getBlockedUsers().contains(authUser)) {
+        if (!isViewable(comment, authUsername)) {
             throw new CommentNotFoundException("Comment not found!");
-        }
-        if (!comment.getUser().equals(authUser)) {
-            throw new IllegalStateException("You can only undelete your own comments!");
         }
         if (!comment.getDeleted()) {
             throw new IllegalStateException("This comment isn't deleted!");
@@ -250,7 +246,9 @@ public class CommentServiceImpl implements CommentService {
     public void permanentlyDelete(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getUser().equals(authUser)) {
             throw new IllegalStateException("You can only delete your own comments!");
         }
@@ -261,7 +259,9 @@ public class CommentServiceImpl implements CommentService {
     public void hide(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getUser().equals(authUser)) {
             throw new IllegalStateException("You can only hide your own comments!");
         }
@@ -275,7 +275,9 @@ public class CommentServiceImpl implements CommentService {
     public void unhide(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getUser().equals(authUser)) {
             throw new IllegalStateException("You can only unhide your own posts!");
         }
@@ -289,7 +291,9 @@ public class CommentServiceImpl implements CommentService {
     public void changeContent(String authUsername, Long commentId, String newContent) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        checkAllowViewingAuth(comment, authUsername);
+        if (!isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
         if (!comment.getUser().equals(authUser)) {
             throw new IllegalStateException("You can only change your own comments!");
         }
@@ -297,5 +301,23 @@ public class CommentServiceImpl implements CommentService {
             throw new IllegalArgumentException("New content must be different from the old one!");
         }
         commentRepository.changeContent(comment, newContent);
+    }
+
+    @Override
+    public void tempDeleteByAdmin(Long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        if (comment.getDeletedByAdmin()) {
+            throw new IllegalStateException("This comment is already deleted by an admin!");
+        }
+        commentRepository.tempDeleteByAdmin(comment);
+    }
+
+    @Override
+    public void undeleteByAdmin(Long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        if (!comment.getDeletedByAdmin()) {
+            throw new IllegalStateException("This comment is not deleted by an admin!");
+        }
+        commentRepository.undeleteByAdmin(comment);
     }
 }

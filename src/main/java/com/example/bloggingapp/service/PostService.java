@@ -43,4 +43,6 @@ public interface PostService {
     void unhide(String authUsername, Long postId);
 
     void tempDeleteByAdmin(Long postId);
+
+    void undeleteByAdmin(Long postId);
 }

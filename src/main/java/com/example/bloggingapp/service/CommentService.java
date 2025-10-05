@@ -15,21 +15,15 @@ public interface CommentService {
 
     Set<Comment> findByUsername(String username);
 
-    Set<Comment> findByParentPost(Post post);
+    Set<Comment> findByParentPost(Post post, String authUsername);
 
-    Set<Comment> findByParentPostAuth(Post post, String authUsername);
-
-    Set<Comment> findByParentComment(Comment comment);
-
-    Set<Comment> findByParentCommentAuth(Comment comment, String authUsername);
+    Set<Comment> findByParentComment(Comment comment, String authUsername);
 
     void filterCommentsAuth(Set<Comment> comments, User authUser);
 
     void filterComments(Set<Comment> comments);
 
-    void checkAllowViewing(Comment comment);
-
-    void checkAllowViewingAuth(Comment comment, String authUsername);
+    boolean isViewable(Comment comment, String authUsername);
 
     Optional<Comment> findById(Long commentId);
 
@@ -56,4 +50,8 @@ public interface CommentService {
     void unhide(String authUsername, Long commentId);
 
     void changeContent(String authUsername, Long commentId, String newContent);
+
+    void tempDeleteByAdmin(Long commentId);
+
+    void undeleteByAdmin(Long commentId);
 }

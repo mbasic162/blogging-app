@@ -71,8 +71,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Modifying
     @Query(value = "UPDATE Comment c SET c.content=:new_content WHERE c= :comment")
     void changeContent(Comment comment, @Param("new_content") String newContent);
-    /*
-        @Query("SELECT c FROM Comment c WHERE c.parentPost.id = :postId AND c.isHidden=false AND c.isDeleted=false AND c.user.isPrivate=false AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:authUser) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:authUser AND bu2=c.user) ORDER BY c.rating DESC")
-    Set<Comment> findByParentPostIdAuth(Long postId, @Param("authUser") User authUser);
-     */
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE Comment c SET c.isDeletedByAdmin= true WHERE c=:comment")
+    void tempDeleteByAdmin(Comment comment);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE Comment c SET c.isDeletedByAdmin= false WHERE c=:comment")
+    void undeleteByAdmin(Comment comment);
 }

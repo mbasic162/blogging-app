@@ -40,13 +40,15 @@ public class CommentController {
     public ResponseEntity<String> getUri(@RequestParam @NotNull Long commentId, @RequestParam @NotNull String content, Authentication authentication) {
         Comment comment = commentService.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         String contentById = comment.getContent();
-        if (!contentById.equals(content)) {
-            return ResponseEntity.notFound().build();
-        }
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            commentService.checkAllowViewingAuth(comment, authentication.getName());
-        } else {
-            commentService.checkAllowViewing(comment);
+            authUsername = authentication.getName();
+        }
+        if (!commentService.isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
+        if (!contentById.equals(content)) {
+            throw new CommentNotFoundException("Comment not found!");
         }
         return ResponseEntity.ok(commentService.getUriByIdAndContent(commentId, content));
     }
@@ -54,13 +56,15 @@ public class CommentController {
     @GetMapping("/{comment_uri}")
     public ResponseEntity<CommentDto> getComment(@PathVariable(name = "comment_uri") @NotNull String commentUri, Authentication authentication) {
         Comment comment = commentService.findById(commentService.getIdByUri(commentUri)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (!commentService.getUriByIdAndContent(comment.getId(), comment.getContent()).equals(commentUri)) {
+        String authUsername = "";
+        if (authentication != null && authentication.isAuthenticated()) {
+            authUsername = authentication.getName();
+        }
+        if (!commentService.isViewable(comment, authUsername)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (authentication != null && authentication.isAuthenticated()) {
-            commentService.checkAllowViewingAuth(comment, authentication.getName());
-        } else {
-            commentService.checkAllowViewing(comment);
+        if (!commentService.getUriByIdAndContent(comment.getId(), comment.getContent()).equals(commentUri)) {
+            throw new CommentNotFoundException("Comment not found!");
         }
         return ResponseEntity.ok(commentMapper.toDto(comment));
     }
@@ -68,14 +72,14 @@ public class CommentController {
     @GetMapping("/{comment_uri}/comments")
     public ResponseEntity<Set<CommentDto>> comments(@PathVariable(name = "comment_uri") String commentUri, Authentication authentication) {
         Comment comment = commentService.findById(commentService.getIdByUri(commentUri)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        Set<Comment> comments;
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            commentService.checkAllowViewingAuth(comment, authentication.getName());
-            comments = commentService.findByParentCommentAuth(comment, authentication.getName());
-        } else {
-            comments = commentService.findByParentComment(comment);
-            commentService.checkAllowViewing(comment);
+            authUsername = authentication.getName();
         }
+        if (!commentService.isViewable(comment, authUsername)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
+        Set<Comment> comments = commentService.findByParentComment(comment, authUsername);
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
 

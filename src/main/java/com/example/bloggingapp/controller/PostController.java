@@ -107,11 +107,7 @@ public class PostController {
         if (!postService.isViewable(post, authUsername)) {
             throw new PostNotFoundException("Post not found!");
         }
-        if (authentication != null && authentication.isAuthenticated()) {
-            comments = commentService.findByParentPostAuth(post, authentication.getName());
-        } else {
-            comments = commentService.findByParentPost(post);
-        }
+        comments = commentService.findByParentPost(post, authUsername);
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
 
