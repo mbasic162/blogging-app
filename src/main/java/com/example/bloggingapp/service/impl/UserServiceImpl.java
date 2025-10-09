@@ -240,7 +240,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void checkAllowViewingAuth(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (((user.getPrivate() && !user.equals(authUser)) || user.getDeleted() || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
+        if (!user.getEnabled() || ((user.getPrivate() && !user.equals(authUser)) || user.getDeleted() || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
             throw new UserNotFoundException("User not found!");
         }
     }

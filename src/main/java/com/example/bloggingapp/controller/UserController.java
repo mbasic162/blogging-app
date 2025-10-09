@@ -1,15 +1,18 @@
 package com.example.bloggingapp.controller;
 
+import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.UserFollowDto;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
+import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.mapper.PostMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.service.CommentService;
 import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
 import jakarta.validation.Valid;
@@ -36,6 +39,8 @@ public class UserController {
     private final UserFollowMapper userFollowMapper = UserFollowMapper.INSTANCE;
     private final PostService postService;
     private final PostMapper postMapper = PostMapper.INSTANCE;
+    private final CommentService commentService;
+    private final CommentMapper commentMapper = CommentMapper.INSTANCE;
 
 
     @GetMapping("/{username}")
@@ -61,14 +66,29 @@ public class UserController {
 
     @GetMapping("/{username}/posts")
     public ResponseEntity<Set<PostDto>> getPosts(@PathVariable String username, Authentication authentication) {
-        if (!userService.existsByUsername(username)) {
-            throw new UserNotFoundException("User not found!");
-        }
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
+            userService.checkAllowViewingAuth(user, authUsername);
+        } else {
+            userService.checkAllowViewing(user);
         }
-        return ResponseEntity.ok(postService.findByUsername(username, authUsername).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+
+        return ResponseEntity.ok(postService.findByUser(user, authUsername).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+    }
+
+    @GetMapping("/{username}/comments")
+    public ResponseEntity<Set<CommentDto>> getComments(@PathVariable String username, Authentication authentication) {
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        String authUsername = "";
+        if (authentication != null && authentication.isAuthenticated()) {
+            authUsername = authentication.getName();
+            userService.checkAllowViewingAuth(user, authUsername);
+        } else {
+            userService.checkAllowViewing(user);
+        }
+        return ResponseEntity.ok(commentService.findByUser(user, authUsername).stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")

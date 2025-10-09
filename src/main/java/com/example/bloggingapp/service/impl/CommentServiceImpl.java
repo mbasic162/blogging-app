@@ -59,8 +59,22 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Set<Comment> findByUsername(String username) {
-        return commentRepository.findByUsername(username);
+    public Set<Comment> findByUser(User user, String authUsername) {
+        Set<Comment> comments;
+        if (authUsername.isEmpty()) {
+            comments = commentRepository.findByUser(user);
+            filterComments(comments);
+            return comments;
+        }
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (user.equals(authUser)) {
+            comments = commentRepository.findBySelf(user);
+            filterCommentsAuth(comments, authUser);
+            return comments;
+        }
+        comments = commentRepository.findByUserAuth(user, authUser);
+        filterCommentsAuth(comments, authUser);
+        return comments;
     }
 
     @Override

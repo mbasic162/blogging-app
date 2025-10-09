@@ -1,12 +1,13 @@
 package com.example.bloggingapp.service;
 
 import com.example.bloggingapp.model.Post;
+import com.example.bloggingapp.model.User;
 
 import java.util.Optional;
 import java.util.Set;
 
 public interface PostService {
-    Set<Post> findByUsername(String username, String authUsername);
+    Set<Post> findByUser(User user, String authUsername);
 
     Optional<Post> findById(Long id);
 

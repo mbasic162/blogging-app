@@ -2,6 +2,7 @@ package com.example.bloggingapp.repository;
 
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
+import com.example.bloggingapp.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,8 +14,15 @@ import java.util.Set;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    @Query("SELECT c FROM Comment c WHERE c.user.username = :username")
-    Set<Comment> findByUsername(String username);
+    @Query("SELECT c FROM Comment c WHERE c.user=:user AND c.isDeleted = false AND c.isHidden = false AND c.isDeletedByAdmin = false AND c.user.isPrivate = false AND c.user.isEnabled = true")
+    Set<Comment> findByUser(User user);
+
+    @Query(value = "SELECT c FROM Comment c WHERE c.user=:user AND c.isDeleted = false AND c.isHidden = false AND c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=c.user)")
+    Set<Comment> findByUserAuth(User user, @Param("auth_user") User authUser);
+
+    @Query(value = "SELECT c from Comment c WHERE c.user=:auth_user")
+    Set<Comment> findBySelf(@Param("auth_user") User authUser);
+
 
     @Query("SELECT c FROM Comment c WHERE c.parentPost = :post AND c.parentComment IS NULL ORDER BY c.rating DESC")
     Set<Comment> findByParentPost(Post post);

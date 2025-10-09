@@ -13,7 +13,7 @@ public interface CommentService {
 
     Comment create(CreateCommentRequest request, String authUsername);
 
-    Set<Comment> findByUsername(String username);
+    Set<Comment> findByUser(User user, String authUsername);
 
     Set<Comment> findByParentPost(Post post, String authUsername);
 

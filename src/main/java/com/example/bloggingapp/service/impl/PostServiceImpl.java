@@ -28,13 +28,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findByUsername(String username, String authUsername) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+    public Set<Post> findByUser(User user, String authUsername) {
         if (authUsername.isEmpty()) {
             return postRepository.findByUser(user);
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (username.equals(authUsername)) {
+        if (user.equals(authUser)) {
             return postRepository.findBySelf(authUser);
         }
         return postRepository.findByUserAuth(user, authUser);
