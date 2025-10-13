@@ -2,6 +2,7 @@ package com.example.bloggingapp.service.impl;
 
 import com.example.bloggingapp.exception.PostNotFoundException;
 import com.example.bloggingapp.exception.UserNotFoundException;
+import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.repository.PostRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,14 +31,27 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Set<Post> findByUser(User user, String authUsername) {
+        Set<Post> posts;
         if (authUsername.isEmpty()) {
-            return postRepository.findByUser(user);
+            posts = postRepository.findByUser(user);
+            for (Post post : posts) {
+                filterComments(post.getComments());
+            }
+            return posts;
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (user.equals(authUser)) {
-            return postRepository.findBySelf(authUser);
+            posts = postRepository.findBySelf(user);
+            for (Post post : posts) {
+                filterCommentsAuth(post.getComments(), authUser);
+            }
+            return posts;
         }
-        return postRepository.findByUserAuth(user, authUser);
+        posts = postRepository.findByUserAuth(user, authUser);
+        for (Post post : posts) {
+            filterCommentsAuth(post.getComments(), authUser);
+        }
+        return posts;
     }
 
     @Override
@@ -269,5 +284,31 @@ public class PostServiceImpl implements PostService {
             throw new IllegalStateException("This post is not deleted by an admin!");
         }
         postRepository.undeleteByAdmin(post);
+    }
+
+    @Override
+    public void filterComments(Set<Comment> comments) {
+        for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
+            Comment comment = i.next();
+            User user = comment.getUser();
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled()) {
+                i.remove();
+            } else {
+                filterComments(comment.getComments());
+            }
+        }
+    }
+
+    @Override
+    public void filterCommentsAuth(Set<Comment> comments, User authUser) {
+        for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
+            Comment comment = i.next();
+            User user = comment.getUser();
+            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+                i.remove();
+            } else {
+                filterCommentsAuth(comment.getComments(), authUser);
+            }
+        }
     }
 }

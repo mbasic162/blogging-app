@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -66,5 +67,42 @@ public class Comment {
         this.user = user;
         this.parentPost = parentPost;
         this.parentComment = parentComment;
+    }
+
+    @Override
+    public String toString() {
+        if (parentComment != null) {
+            return "Comment{" +
+                    "id=" + id +
+                    ", content='" + content + '\'' +
+                    ", rating=" + rating +
+                    ", user=" + user.getId() +
+                    ", parentPost=" + parentPost.getId() +
+                    ", parentComment=" + parentComment.getId() +
+                    ", comments=" + comments +
+                    ", createdAt=" + createdAt +
+                    ", isDeleted=" + isDeleted +
+                    ", isHidden=" + isHidden +
+                    ", isDeletedByAdmin=" + isDeletedByAdmin +
+                    ", likedBy=" + likedBy +
+                    ", dislikedBy=" + dislikedBy +
+                    '}';
+        }
+        return "Comment{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", rating=" + rating +
+                ", user=" + user.getId() +
+                ", parentPost=" + parentPost.getId() +
+                ", parentComment=null" +
+                ", comments=" + comments +
+                ", createdAt=" + createdAt +
+                ", isDeleted=" + isDeleted +
+                ", isHidden=" + isHidden +
+                ", isDeletedByAdmin=" + isDeletedByAdmin +
+                ", likedBy=" + likedBy.stream().map(User::getId).collect(Collectors.toSet()) +
+                ", dislikedBy=" + dislikedBy.stream().map(User::getId).collect(Collectors.toSet()) +
+                '}';
+
     }
 }

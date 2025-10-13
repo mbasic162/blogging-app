@@ -1,5 +1,6 @@
 package com.example.bloggingapp.service;
 
+import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 
@@ -46,4 +47,8 @@ public interface PostService {
     void tempDeleteByAdmin(Long postId);
 
     void undeleteByAdmin(Long postId);
+
+    void filterComments(Set<Comment> comments);
+
+    void filterCommentsAuth(Set<Comment> comments, User authUser);
 }

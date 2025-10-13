@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "posts")
@@ -58,5 +59,23 @@ public class Post {
         this.content = content;
         this.user = user;
         this.isHidden = isHidden;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", rating=" + rating +
+                ", user=" + user.getId() +
+                ", comments=" + comments +
+                ", createdAt=" + createdAt +
+                ", isDeleted=" + isDeleted +
+                ", isHidden=" + isHidden +
+                ", isDeletedByAdmin=" + isDeletedByAdmin +
+                ", likedBy=" + likedBy.stream().map(User::getId).collect(Collectors.toSet()) +
+                ", dislikedBy=" + dislikedBy.stream().map(User::getId).collect(Collectors.toSet()) +
+                '}';
     }
 }

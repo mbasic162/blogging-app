@@ -40,8 +40,8 @@ public class AuthService {
     }
 
     public String login(LoginRequest loginRequest) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         return jwtUtils.generateToken(user.getUsername(), user.getRoles());
     }
 }

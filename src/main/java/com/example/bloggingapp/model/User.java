@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -88,4 +89,28 @@ public class User {
         this.isPrivate = isPrivate;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", description='" + description + '\'' +
+                ", createdOn=" + createdOn +
+                ", isPrivate=" + isPrivate +
+                ", isEnabled=" + isEnabled +
+                ", isDeleted=" + isDeleted +
+                ", roles=" + roles +
+                ", followers=" + followers.stream().map(User::getId).collect(Collectors.toSet()) +
+                ", following=" + following.stream().map(User::getId).collect(Collectors.toSet()) +
+                ", blockedUsers=" + blockedUsers.stream().map(User::getId).collect(Collectors.toSet()) +
+                ", posts=" + posts +
+                ", comments=" + comments +
+                ", likedPosts=" + likedPosts +
+                ", dislikedPosts=" + dislikedPosts +
+                ", likedComments=" + likedComments +
+                ", dislikedComments=" + dislikedComments +
+                '}';
+    }
 }
