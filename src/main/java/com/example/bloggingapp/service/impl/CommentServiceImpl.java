@@ -79,10 +79,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public String getUriByIdAndContent(Long commentId, String content) {
-        if (content.length() > 14 && content.charAt(14) != ' ') {
-            content = content.substring(0, 15);
-        } else if (content.length() > 14) {
-            content = content.substring(0, 14);
+        if (content.length() > 30 && content.charAt(30) != ' ') {
+            content = content.substring(0, 31);
+        } else if (content.length() > 30) {
+            content = content.substring(0, 30);
         }
         return UriSanitizer.encode(content + "-" + commentId);
     }

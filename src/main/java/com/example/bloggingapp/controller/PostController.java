@@ -61,7 +61,7 @@ public class PostController {
     }
 
     @PostMapping("/uri")
-    public ResponseEntity<String> getUri(@RequestParam String title, @RequestParam Long postId, Authentication authentication) {
+    public ResponseEntity<String> getUri(@RequestParam Long postId, @RequestParam String title, Authentication authentication) {
         Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         String titleById = post.getTitle();
         String authUsername = "";

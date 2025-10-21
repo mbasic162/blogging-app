@@ -61,11 +61,23 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Set<Post> findN(int n, String authUsername) {
+        Set<Post> posts;
+        if (n < 0 || n > 50) {
+            throw new IllegalArgumentException("Number of posts must be between 0 and 50");
+        }
         if (authUsername.isEmpty()) {
-            return postRepository.findN(Limit.of(n));
+            posts = postRepository.findN(Limit.of(n));
+            for (Post post : posts) {
+                filterComments(post.getComments());
+            }
+            return posts;
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        return postRepository.findNAuth(Limit.of(n), authUser);
+        posts = postRepository.findNAuth(Limit.of(n), authUser);
+        for (Post post : posts) {
+            filterCommentsAuth(post.getComments(), authUser);
+        }
+        return posts;
     }
 
     @Override
@@ -83,6 +95,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String getUriByTitleAndId(String title, Long postId) {
+        if (title.length() > 30) {
+            title = title.substring(0, 30);
+        }
         return UriSanitizer.encode(title + "-" + postId);
     }
 
