@@ -44,7 +44,10 @@ public class UserController {
 
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserDto> getUser(@PathVariable String username, Authentication authentication) {
+    public ResponseEntity<UserDto> getUser(
+            @PathVariable String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authentication != null && authentication.isAuthenticated()) {
             User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
@@ -65,7 +68,10 @@ public class UserController {
     }
 
     @GetMapping("/{username}/posts")
-    public ResponseEntity<Set<PostDto>> getPosts(@PathVariable String username, Authentication authentication) {
+    public ResponseEntity<Set<PostDto>> getPosts(
+            @PathVariable String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
@@ -79,7 +85,10 @@ public class UserController {
     }
 
     @GetMapping("/{username}/comments")
-    public ResponseEntity<Set<CommentDto>> getComments(@PathVariable String username, Authentication authentication) {
+    public ResponseEntity<Set<CommentDto>> getComments(
+            @PathVariable String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
@@ -92,7 +101,10 @@ public class UserController {
     }
 
     @GetMapping("{username}/followers")
-    public ResponseEntity<Set<UserFollowDto>> getFollowers(@PathVariable String username, Authentication authentication) {
+    public ResponseEntity<Set<UserFollowDto>> getFollowers(
+            @PathVariable String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authentication != null && authentication.isAuthenticated()) {
             userService.checkAllowViewingAuth(user, authentication.getName());
@@ -103,7 +115,10 @@ public class UserController {
     }
 
     @GetMapping("{username}/following")
-    public ResponseEntity<Set<UserFollowDto>> getFollowing(@PathVariable String username, Authentication authentication) {
+    public ResponseEntity<Set<UserFollowDto>> getFollowing(
+            @PathVariable String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authentication != null && authentication.isAuthenticated()) {
             userService.checkAllowViewingAuth(user, authentication.getName());
@@ -115,7 +130,10 @@ public class UserController {
 
     @PostMapping("/follow")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> follow(@RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+    public ResponseEntity<Void> follow(
+            @NotBlank(message = "Please provide a username!") String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.checkAllowViewingAuth(user, authentication.getName());
         userService.follow(user, authentication.getName());
@@ -125,7 +143,9 @@ public class UserController {
     @PostMapping("/unfollow")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unfollow(
-            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @NotBlank(message = "Please provide a username!") String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.checkAllowViewingAuth(user, authentication.getName());
         userService.unfollow(user, authentication.getName());
@@ -135,7 +155,9 @@ public class UserController {
     @PostMapping("/block")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> block(
-            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @NotBlank(message = "Please provide a username!") String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.block(user, authentication.getName());
         return ResponseEntity.ok().build();
@@ -144,7 +166,9 @@ public class UserController {
     @PostMapping("/unblock")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unblock(
-            @RequestParam @NotBlank(message = "Please provide a username") String username, Authentication authentication) {
+            @NotBlank(message = "Please provide a username!") String username,
+            Authentication authentication
+    ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         userService.unblock(user, authentication.getName());
         return ResponseEntity.ok().build();
@@ -153,7 +177,8 @@ public class UserController {
     @GetMapping("/delete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> tempDelete(
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         userService.tempDelete(authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -161,7 +186,8 @@ public class UserController {
     @GetMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> undelete(
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         userService.undelete(authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -169,7 +195,9 @@ public class UserController {
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
-            Authentication authentication, @RequestParam @NotBlank(message = "Password cannot be blank!") String password) {
+            Authentication authentication,
+            @NotBlank(message = "Password cannot be blank!") String password
+    ) {
         userService.permanentlyDelete(authentication.getName(), password);
         return ResponseEntity.ok().build();
     }
@@ -177,10 +205,10 @@ public class UserController {
     @PostMapping("/changeUsername")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changeUsername(
-            @RequestParam
-            @NotBlank(message = "Please provide a username")
+            @NotBlank(message = "Please provide a username!")
             @Pattern(regexp = "^(?!.*('|\"|;|\\|/|%|--| )).*$", message = "Username cannot contain special characters or spaces!")
-            @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername, Authentication authentication) {
+            @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername, Authentication authentication
+    ) {
         String newToken = userService.changeUsername(newUsername, authentication.getName());
         return ResponseEntity.ok().body(newToken);
     }
@@ -188,7 +216,9 @@ public class UserController {
     @PostMapping("/changeEmail")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeEmail(
-            @RequestBody @Valid EmailChangeRequest request, Authentication authentication) {
+            @RequestBody @Valid EmailChangeRequest request,
+            Authentication authentication
+    ) {
         userService.changeEmail(request, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -196,7 +226,9 @@ public class UserController {
     @PostMapping("/changePassword")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changePassword(
-            @RequestBody @Valid PasswordChangeRequest request, Authentication authentication) {
+            @RequestBody @Valid PasswordChangeRequest request,
+            Authentication authentication
+    ) {
         userService.changePassword(request, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -204,21 +236,27 @@ public class UserController {
     @PostMapping("/changeDescription")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeDescription(
-            @RequestParam @Size(max = 200, message = "Description must be at most 200 characters!") String newDescription, Authentication authentication) {
+            @Size(max = 200, message = "Description must be at most 200 characters!") String newDescription,
+            Authentication authentication
+    ) {
         userService.changeDescription(newDescription, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/goPrivate")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> goPrivate(Authentication authentication) {
+    public ResponseEntity<Void> goPrivate(
+            Authentication authentication
+    ) {
         userService.goPrivate(authentication.getName());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/goPublic")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> goPublic(Authentication authentication) {
+    public ResponseEntity<Void> goPublic(
+            Authentication authentication
+    ) {
         userService.goPublic(authentication.getName());
         return ResponseEntity.ok().build();
     }
