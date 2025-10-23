@@ -42,7 +42,7 @@ public class CommentController {
     @PostMapping("/uri")
     public ResponseEntity<String> getUri(
             @NotNull Long commentId,
-            @NotNull String content,
+            @NotBlank(message = "Content cannot be blank!") String content,
             Authentication authentication) {
         Comment comment = commentService.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         String contentById = comment.getContent();
@@ -61,7 +61,8 @@ public class CommentController {
 
     @GetMapping("/{comment_uri}")
     public ResponseEntity<CommentDto> getComment(
-            @PathVariable(name = "comment_uri") @NotNull String commentUri,
+            @PathVariable(name = "comment_uri")
+            @NotBlank(message = "Comment uri cannot be blank!") String commentUri,
             Authentication authentication) {
         Comment comment = commentService.findById(commentService.getIdByUri(commentUri)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         String authUsername = "";
@@ -79,7 +80,9 @@ public class CommentController {
 
     @GetMapping("/{comment_uri}/comments")
     public ResponseEntity<Set<CommentDto>> comments(
-            @PathVariable(name = "comment_uri") String commentUri,
+            @PathVariable(name = "comment_uri")
+            @NotBlank(message = "Comment uri cannot be blank!")
+            String commentUri,
             Authentication authentication
     ) {
         Comment comment = commentService.findById(commentService.getIdByUri(commentUri)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));

@@ -14,7 +14,7 @@ public interface PostService {
 
     Post save(Post post);
 
-    Set<Post> findN(int n, String authUsername);
+    Set<Post> findN(Integer numberOfPosts, String authUsername);
 
     String getUriByTitleAndId(String title, Long postId);
 

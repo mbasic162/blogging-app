@@ -45,7 +45,8 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<UserDto> getUser(
-            @PathVariable String username,
+            @PathVariable
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -69,7 +70,8 @@ public class UserController {
 
     @GetMapping("/{username}/posts")
     public ResponseEntity<Set<PostDto>> getPosts(
-            @PathVariable String username,
+            @PathVariable
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -86,7 +88,8 @@ public class UserController {
 
     @GetMapping("/{username}/comments")
     public ResponseEntity<Set<CommentDto>> getComments(
-            @PathVariable String username,
+            @PathVariable
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -102,7 +105,8 @@ public class UserController {
 
     @GetMapping("{username}/followers")
     public ResponseEntity<Set<UserFollowDto>> getFollowers(
-            @PathVariable String username,
+            @PathVariable
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -116,7 +120,8 @@ public class UserController {
 
     @GetMapping("{username}/following")
     public ResponseEntity<Set<UserFollowDto>> getFollowing(
-            @PathVariable String username,
+            @PathVariable
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -131,7 +136,7 @@ public class UserController {
     @PostMapping("/follow")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> follow(
-            @NotBlank(message = "Please provide a username!") String username,
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -143,7 +148,7 @@ public class UserController {
     @PostMapping("/unfollow")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unfollow(
-            @NotBlank(message = "Please provide a username!") String username,
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -155,7 +160,7 @@ public class UserController {
     @PostMapping("/block")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> block(
-            @NotBlank(message = "Please provide a username!") String username,
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -166,7 +171,7 @@ public class UserController {
     @PostMapping("/unblock")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unblock(
-            @NotBlank(message = "Please provide a username!") String username,
+            @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
@@ -195,8 +200,8 @@ public class UserController {
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
-            Authentication authentication,
-            @NotBlank(message = "Password cannot be blank!") String password
+            @NotBlank(message = "Password cannot be blank!") String password,
+            Authentication authentication
     ) {
         userService.permanentlyDelete(authentication.getName(), password);
         return ResponseEntity.ok().build();
@@ -205,9 +210,10 @@ public class UserController {
     @PostMapping("/changeUsername")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changeUsername(
-            @NotBlank(message = "Please provide a username!")
+            @NotBlank(message = "Username cannot be blank!")
             @Pattern(regexp = "^(?!.*('|\"|;|\\|/|%|--| )).*$", message = "Username cannot contain special characters or spaces!")
-            @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername, Authentication authentication
+            @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters!") String newUsername,
+            Authentication authentication
     ) {
         String newToken = userService.changeUsername(newUsername, authentication.getName());
         return ResponseEntity.ok().body(newToken);

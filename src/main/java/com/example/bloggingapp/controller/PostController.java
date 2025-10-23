@@ -1,5 +1,6 @@
 package com.example.bloggingapp.controller;
 
+import com.example.bloggingapp.annotation.validation.Between;
 import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
 import com.example.bloggingapp.dto.request.CreatePostRequest;
@@ -41,7 +42,8 @@ public class PostController {
 
     @PostMapping("/")
     public ResponseEntity<Set<PostDto>> getNPosts(
-            int numberOfPosts,
+            @Between(min = 1, max = 50, message = "Number of posts must be between 1 and 50!")
+            Integer numberOfPosts,
             Authentication authentication
     ) {
         String authUsername = "";
@@ -65,7 +67,8 @@ public class PostController {
 
     @PostMapping("/uri")
     public ResponseEntity<String> getUri(
-            Long postId, String title,
+            @NotNull Long postId,
+            @NotBlank(message = "Title must not be blank!") String title,
             Authentication authentication
     ) {
         Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
@@ -85,7 +88,8 @@ public class PostController {
 
     @GetMapping("/{post_uri}")
     public ResponseEntity<PostDto> getPost(
-            @PathVariable(name = "post_uri") @NotNull String postUri,
+            @PathVariable(name = "post_uri")
+            @NotBlank(message = "Post uri must not be blank!") String postUri,
             Authentication authentication
     ) {
         Post post = postService.findById(postService.getIdByUri(postUri)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
@@ -104,7 +108,8 @@ public class PostController {
 
     @GetMapping("{post_uri}/comments")
     public ResponseEntity<Set<CommentDto>> comments(
-            @PathVariable(name = "post_uri") String postUri,
+            @PathVariable(name = "post_uri")
+            @NotBlank(message = "Post uri must not be blank!") String postUri,
             Authentication authentication
     ) {
         Long postId = postService.getIdByUri(postUri);
@@ -214,7 +219,8 @@ public class PostController {
     public ResponseEntity<Void> changeTitle(
             @NotNull Long postId,
             Authentication authentication,
-            @NotBlank(message = "Title cannot be blank!") @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
+            @NotBlank(message = "Title cannot be blank!")
+            @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
     ) {
         postService.changeTitle(authentication.getName(), postId, newTitle);
         return ResponseEntity.ok().build();

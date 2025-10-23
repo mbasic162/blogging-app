@@ -3,6 +3,8 @@ package com.example.bloggingapp.controller;
 import com.example.bloggingapp.service.CommentService;
 import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,37 +20,37 @@ public class AdminController {
     private final CommentService commentService;
 
     @PostMapping("/disable")
-    public ResponseEntity<Void> disable(String username) {
+    public ResponseEntity<Void> disable(@NotBlank String username) {
         userService.disable(username);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/enable")
-    public ResponseEntity<Void> enable(String username) {
+    public ResponseEntity<Void> enable(@NotBlank String username) {
         userService.enable(username);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/deletePost")
-    public ResponseEntity<Void> deletePost(Long postId) {
+    public ResponseEntity<Void> deletePost(@NotNull Long postId) {
         postService.tempDeleteByAdmin(postId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/undeletePost")
-    public ResponseEntity<Void> undeletePost(Long postId) {
+    public ResponseEntity<Void> undeletePost(@NotNull Long postId) {
         postService.undeleteByAdmin(postId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/deleteComment")
-    public ResponseEntity<Void> deleteComment(Long commentId) {
+    public ResponseEntity<Void> deleteComment(@NotNull Long commentId) {
         commentService.tempDeleteByAdmin(commentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/undeleteComment")
-    public ResponseEntity<Void> undeleteComment(Long commentId) {
+    public ResponseEntity<Void> undeleteComment(@NotNull Long commentId) {
         commentService.undeleteByAdmin(commentId);
         return ResponseEntity.ok().build();
     }

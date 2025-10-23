@@ -60,11 +60,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findN(int numberOfPosts, String authUsername) {
+    public Set<Post> findN(Integer numberOfPosts, String authUsername) {
         Set<Post> posts;
-        if (numberOfPosts < 0 || numberOfPosts > 50) {
-            throw new IllegalArgumentException("Number of posts must be between 0 and 50");
-        }
         if (authUsername.isEmpty()) {
             posts = postRepository.findN(Limit.of(numberOfPosts));
             for (Post post : posts) {
