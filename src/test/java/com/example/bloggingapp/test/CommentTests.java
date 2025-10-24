@@ -42,6 +42,10 @@ public class CommentTests {
     private final ObjectMapper objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
     private final ObjectWriter objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
     private final TestService testService;
+    private final String firstCommentUri = "comment-on-post-1-1";
+    private final String secondCommentUri = "comment-on-post-2-2";
+    private final String fourteenthCommentUri = "this-is-a-comment-on-second-post-14";
+    private final String sixteenthCommentUri = "this-is-a-comment-on-fourteenth-comment-16";
 
     @Autowired
     public CommentTests(TestService testService) {
@@ -103,8 +107,8 @@ public class CommentTests {
 
     @Test
     @Order(4)
-    public void getComments_OnSecondComment_ShouldReturnCommentDtos() throws Exception {
-        MvcResult result = mockMvc.perform(get("/comment/comment-on-post-2-2/comments")).andExpect(status().isOk()).andDo(print()).andReturn();
+    public void getComments_WithSecondComment_ShouldReturnCommentDtos() throws Exception {
+        MvcResult result = mockMvc.perform(get("/comment/" + secondCommentUri + "/comments")).andExpect(status().isOk()).andDo(print()).andReturn();
         Set<CommentDto> commentsDto = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
         testService.checkAllowViewingCommentDtos(commentsDto, "");
@@ -113,8 +117,8 @@ public class CommentTests {
     @Test
     @Order(4)
     @WithMockUser("new_user")
-    public void getComments_OnFirstComment_AsNewUser_ShouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/comment/comment-on-post-1/comments")).andExpect(status().isNotFound());
+    public void getComments_WithFirstComment_AsNewUser_ShouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/comment/" + firstCommentUri + "/comments")).andExpect(status().isNotFound());
     }
 
     @Test
@@ -125,7 +129,7 @@ public class CommentTests {
                         .param("content", "Comment on post 1"))
                 .andExpect(status().isOk()).andDo(print()).andReturn();
         String uri = result.getResponse().getContentAsString();
-        if (!uri.equalsIgnoreCase("comment-on-post-1-1")) {
+        if (!uri.equalsIgnoreCase(firstCommentUri)) {
             throw new RuntimeException("Wrong URI");
         }
     }
@@ -144,7 +148,7 @@ public class CommentTests {
     @Order(4)
     @WithMockUser("first_user")
     public void getComment_WithNewUsersComment_AsFirstUser_ShouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/comment/this-is-a-comment-on-second-post-14"))
+        mockMvc.perform(get("/comment/" + fourteenthCommentUri))
                 .andExpect(status().isNotFound());
     }
 
@@ -152,7 +156,7 @@ public class CommentTests {
     @Order(4)
     @WithMockUser("first_user")
     public void getComment_WithSecondComment_AsFirstUser_ShouldReturnCommentDto() throws Exception {
-        mockMvc.perform(get("/comment/comment-on-post-2-2"))
+        mockMvc.perform(get("/comment/" + secondCommentUri))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -160,7 +164,7 @@ public class CommentTests {
     @Test
     @Order(4)
     public void getComment_WithPrivateUsersComment_ShouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/comment/this-is-a-comment-on-fourteenth-comment-16"))
+        mockMvc.perform(get("/comment/" + sixteenthCommentUri))
                 .andExpect(status().isNotFound());
     }
 
@@ -169,7 +173,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void hide_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/hide")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -178,7 +182,7 @@ public class CommentTests {
     @WithMockUser("fourth_user")
     public void hide_WithSecondComment_AsFourthUser_ShouldReturnBadRequest() throws Exception {
         mockMvc.perform(post("/comment/hide")
-                        .param("commentId", "2"))
+                        .param("commentUri", secondCommentUri))
                 .andExpect(status().isBadRequest());
     }
 
@@ -187,7 +191,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void delete_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/delete")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -196,7 +200,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void unhide_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/unhide")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -205,7 +209,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void like_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/like")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -214,7 +218,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void dislike_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/dislike")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -223,7 +227,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void dislike_WithPrivateUsersComment_AsNewUser_ShouldReturnNotFound() throws Exception {
         mockMvc.perform(post("/comment/dislike")
-                        .param("commentId", "16"))
+                        .param("commentUri", sixteenthCommentUri))
                 .andExpect(status().isNotFound());
     }
 
@@ -232,7 +236,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void undelete_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/undelete")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
@@ -241,7 +245,7 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void changeContent_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/changeContent")
-                        .param("commentId", "14")
+                        .param("commentUri", fourteenthCommentUri)
                         .param("newContent", "This is a comment on second post2"))
                 .andExpect(status().isOk());
     }
@@ -251,14 +255,14 @@ public class CommentTests {
     @WithMockUser("new_user")
     public void permanentlyDelete_WithFourteenthComment_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/comment/permanentlyDelete")
-                        .param("commentId", "14"))
+                        .param("commentUri", fourteenthCommentUri))
                 .andExpect(status().isOk());
     }
 
     @Test
     @Order(10)
     public void getComment_WithFourteenthComment_ShouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/comment/this-is-a-comment-on-second-post-14"))
+        mockMvc.perform(get("/comment/" + fourteenthCommentUri))
                 .andExpect(status().isNotFound());
     }
 }

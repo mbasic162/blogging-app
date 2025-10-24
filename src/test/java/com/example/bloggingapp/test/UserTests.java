@@ -110,14 +110,14 @@ public class UserTests {
     @Order(5)
     @WithMockUser("new_user")
     void delete_AsNewUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/delete")).andExpect(status().isOk());
+        mockMvc.perform(post("/user/delete")).andExpect(status().isOk());
     }
 
     @Test
     @Order(6)
     @WithMockUser("new_user")
     void undelete_AsNewUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/undelete")).andExpect(status().isOk());
+        mockMvc.perform(post("/user/undelete")).andExpect(status().isOk());
     }
 
     @Test
@@ -280,21 +280,21 @@ public class UserTests {
     @Order(13)
     @WithMockUser("test_user")
     void goPublic_AsTestUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/goPublic")).andExpect(status().isOk());
+        mockMvc.perform(post("/user/goPublic")).andExpect(status().isOk());
     }
 
     @Test
     @Order(13)
     @WithMockUser("test_user")
     void delete_AsTestUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/delete")).andExpect(status().isOk());
+        mockMvc.perform(post("/user/delete")).andExpect(status().isOk());
     }
 
     @Test
     @Order(14)
     @WithMockUser("test_user")
     void goPrivate_AsTestUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/goPrivate")).andExpect(status().isOk());
+        mockMvc.perform(post("/user/goPrivate")).andExpect(status().isOk());
     }
 
     @Test

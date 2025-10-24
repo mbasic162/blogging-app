@@ -179,7 +179,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/delete")
+    @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> tempDelete(
             Authentication authentication
@@ -188,7 +188,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/undelete")
+    @PostMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> undelete(
             Authentication authentication
@@ -249,7 +249,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/goPrivate")
+    @PostMapping("/goPrivate")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> goPrivate(
             Authentication authentication
@@ -258,7 +258,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/goPublic")
+    @PostMapping("/goPublic")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> goPublic(
             Authentication authentication
