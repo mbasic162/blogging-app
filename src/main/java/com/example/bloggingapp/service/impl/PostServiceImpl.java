@@ -78,19 +78,6 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public boolean isViewable(Post post, String authUsername) {
-        User user = post.getUser();
-        if (authUsername.isEmpty()) {
-            return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && !user.getPrivate() && !user.getDeleted() && user.getEnabled();
-        }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (authUser.equals(user)) {
-            return true;
-        }
-        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
-    }
-
-    @Override
     public String getUriByTitleAndId(String title, Long postId) {
         if (title.length() > 30) {
             title = title.substring(0, 30);
@@ -322,5 +309,18 @@ public class PostServiceImpl implements PostService {
                 filterCommentsAuth(comment.getComments(), authUser);
             }
         }
+    }
+
+    @Override
+    public boolean isViewable(Post post, String authUsername) {
+        User user = post.getUser();
+        if (authUsername.isEmpty()) {
+            return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user, "");
+        }
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.equals(user)) {
+            return true;
+        }
+        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user, authUser);
     }
 }

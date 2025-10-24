@@ -50,20 +50,17 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!userService.isViewable(user, "")) {
+            throw new UserNotFoundException("User not found!");
+        }
         if (authentication != null && authentication.isAuthenticated()) {
-            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-            if (user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
-                throw new UserNotFoundException("User not found!");
-            }
+            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
             if (authUser.getBlockedUsers().contains(user)) {
                 return ResponseEntity.ok(new UserDto(username, null, null, null, true, false));
             }
             if (user.getBlockedUsers().contains(authUser)) {
                 return ResponseEntity.ok(new UserDto(username, null, null, null, false, true));
             }
-            userService.checkAllowViewingAuth(user, authentication.getName());
-        } else {
-            userService.checkAllowViewing(user);
         }
         return ResponseEntity.ok(userMapper.toDto(user));
     }
@@ -78,11 +75,10 @@ public class UserController {
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
-            userService.checkAllowViewingAuth(user, authUsername);
-        } else {
-            userService.checkAllowViewing(user);
         }
-
+        if (!userService.isViewable(user, authUsername)) {
+            throw new UserNotFoundException("User not found!");
+        }
         return ResponseEntity.ok(postService.findByUser(user, authUsername).stream().map(postMapper::toDto).collect(Collectors.toSet()));
     }
 
@@ -96,9 +92,9 @@ public class UserController {
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
-            userService.checkAllowViewingAuth(user, authUsername);
-        } else {
-            userService.checkAllowViewing(user);
+            if (!userService.isViewable(user, authUsername)) {
+                throw new UserNotFoundException("User not found!");
+            }
         }
         return ResponseEntity.ok(commentService.findByUser(user, authUsername).stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
@@ -110,10 +106,12 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            userService.checkAllowViewingAuth(user, authentication.getName());
-        } else {
-            userService.checkAllowViewing(user);
+            authUsername = authentication.getName();
+        }
+        if (!userService.isViewable(user, authUsername)) {
+            throw new UserNotFoundException("User not found!");
         }
         return ResponseEntity.ok(user.getFollowers().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
@@ -125,10 +123,12 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            userService.checkAllowViewingAuth(user, authentication.getName());
-        } else {
-            userService.checkAllowViewing(user);
+            authUsername = authentication.getName();
+        }
+        if (!userService.isViewable(user, authUsername)) {
+            throw new UserNotFoundException("User not found!");
         }
         return ResponseEntity.ok(user.getFollowing().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
@@ -140,7 +140,9 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        userService.checkAllowViewingAuth(user, authentication.getName());
+        if (!userService.isViewable(user, authentication.getName())) {
+            throw new UserNotFoundException("User not found!");
+        }
         userService.follow(user, authentication.getName());
         return ResponseEntity.ok().build();
     }
@@ -152,7 +154,9 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        userService.checkAllowViewingAuth(user, authentication.getName());
+        if (!userService.isViewable(user, authentication.getName())) {
+            throw new UserNotFoundException("User not found!");
+        }
         userService.unfollow(user, authentication.getName());
         return ResponseEntity.ok().build();
     }

@@ -48,10 +48,7 @@ public interface UserService {
 
     void enable(String username);
 
-    void checkAllowViewing(User user);
+    boolean isViewable(User user, String authUsername);
 
-    void checkAllowViewingAuth(User user, String authUsername);
-
-    boolean isBlockedByOrPrivate(User user, User authUser);
-
+    boolean isViewable(User user, User authUser);
 }

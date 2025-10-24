@@ -119,19 +119,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public boolean isViewable(Comment comment, String authUsername) {
-        User user = comment.getUser();
-        if (authUsername.isEmpty()) {
-            return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && !user.getPrivate() && !user.getDeleted() && user.getEnabled();
-        }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (authUser.equals(user)) {
-            return true;
-        }
-        return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && !user.getPrivate() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
-    }
-
-    @Override
     public Set<Comment> findByParentPost(Post post, String authUsername) {
         Set<Comment> comments = commentRepository.findByParentPost(post);
         if (authUsername.isEmpty()) {
@@ -333,5 +320,18 @@ public class CommentServiceImpl implements CommentService {
             throw new IllegalStateException("This comment is not deleted by an admin!");
         }
         commentRepository.undeleteByAdmin(comment);
+    }
+
+    @Override
+    public boolean isViewable(Comment comment, String authUsername) {
+        User user = comment.getUser();
+        if (authUsername.isEmpty()) {
+            return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && userService.isViewable(user, "");
+        }
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (authUser.equals(user)) {
+            return true;
+        }
+        return !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin() && userService.isViewable(user, authUser);
     }
 }

@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void block(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (isBlockedByOrPrivate(user, authUser) || user.getDeleted() || !user.getEnabled()) {
+        if (user.getBlockedUsers().contains(authUser) || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void unblock(User user, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (isBlockedByOrPrivate(user, authUser) || user.getDeleted() || !user.getEnabled()) {
+        if (user.getBlockedUsers().contains(authUser) || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
             throw new BadCredentialsException("Incorrect password");
         }
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (authUser.getEmail().equals(request.newEmail())) {
+        if (authUser.getEmail().equalsIgnoreCase(request.newEmail())) {
             throw new IllegalArgumentException("New email must be different from the old one!");
         }
         if (userRepository.existsByEmailIgnoreCase(request.newEmail())) {
@@ -231,22 +231,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void checkAllowViewing(User user) {
-        if (user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
-            throw new UserNotFoundException("User not found!");
+    public boolean isViewable(User user, String authUsername) {
+        if (authUsername.isEmpty()) {
+            return !user.getPrivate() && !user.getDeleted() && user.getEnabled();
         }
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (authUser.equals(user)) {
+            return true;
+        }
+        return !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
     }
 
     @Override
-    public void checkAllowViewingAuth(User user, String authUsername) {
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (!user.getEnabled() || ((user.getPrivate() && !user.equals(authUser)) || user.getDeleted() || authUser.getBlockedUsers().contains(user) || user.getBlockedUsers().contains(authUser))) {
-            throw new UserNotFoundException("User not found!");
+    public boolean isViewable(User user, User authUser) {
+        if (authUser.equals(user)) {
+            return true;
         }
-    }
-
-    @Override
-    public boolean isBlockedByOrPrivate(User user, User authUser) {
-        return user.getPrivate() || user.getBlockedUsers().contains(authUser);
+        return !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
     }
 }

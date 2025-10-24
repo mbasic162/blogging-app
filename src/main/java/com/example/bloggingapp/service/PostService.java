@@ -20,8 +20,6 @@ public interface PostService {
 
     Long getIdByUri(String uri);
 
-    boolean isViewable(Post post, String authUsername);
-
     void like(String authUsername, Long postId);
 
     void removeLike(String authUsername, Long postId);
@@ -51,4 +49,6 @@ public interface PostService {
     void filterComments(Set<Comment> comments);
 
     void filterCommentsAuth(Set<Comment> comments, User authUser);
+
+    boolean isViewable(Post post, String authUsername);
 }

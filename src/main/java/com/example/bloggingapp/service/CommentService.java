@@ -23,8 +23,6 @@ public interface CommentService {
 
     void filterComments(Set<Comment> comments);
 
-    boolean isViewable(Comment comment, String authUsername);
-
     Optional<Comment> findById(Long commentId);
 
     String getUriByIdAndContent(Long commentId, String content);
@@ -54,4 +52,6 @@ public interface CommentService {
     void tempDeleteByAdmin(Long commentId);
 
     void undeleteByAdmin(Long commentId);
+
+    boolean isViewable(Comment comment, String authUsername);
 }
