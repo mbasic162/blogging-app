@@ -34,23 +34,14 @@ public class PostServiceImpl implements PostService {
         Set<Post> posts;
         if (authUsername.isEmpty()) {
             posts = postRepository.findByUser(user);
-            for (Post post : posts) {
-                filterComments(post.getComments());
-            }
             return posts;
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (user.equals(authUser)) {
             posts = postRepository.findBySelf(user);
-            for (Post post : posts) {
-                filterCommentsAuth(post.getComments(), authUser);
-            }
             return posts;
         }
         posts = postRepository.findByUserAuth(user, authUser);
-        for (Post post : posts) {
-            filterCommentsAuth(post.getComments(), authUser);
-        }
         return posts;
     }
 
@@ -64,16 +55,10 @@ public class PostServiceImpl implements PostService {
         Set<Post> posts;
         if (authUsername.isEmpty()) {
             posts = postRepository.findN(Limit.of(numberOfPosts));
-            for (Post post : posts) {
-                filterComments(post.getComments());
-            }
             return posts;
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         posts = postRepository.findNAuth(Limit.of(numberOfPosts), authUser);
-        for (Post post : posts) {
-            filterCommentsAuth(post.getComments(), authUser);
-        }
         return posts;
     }
 

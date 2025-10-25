@@ -1,14 +1,14 @@
 package com.example.bloggingapp.controller;
 
 import com.example.bloggingapp.dto.CommentDto;
-import com.example.bloggingapp.dto.PostDto;
+import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.UserFollowDto;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.CommentMapper;
-import com.example.bloggingapp.mapper.PostMapper;
+import com.example.bloggingapp.mapper.PostPreviewMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
 import com.example.bloggingapp.model.User;
@@ -38,9 +38,9 @@ public class UserController {
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserFollowMapper userFollowMapper = UserFollowMapper.INSTANCE;
     private final PostService postService;
-    private final PostMapper postMapper = PostMapper.INSTANCE;
     private final CommentService commentService;
     private final CommentMapper commentMapper = CommentMapper.INSTANCE;
+    private final PostPreviewMapper postPreviewMapper = PostPreviewMapper.INSTANCE;
 
 
     @GetMapping("/{username}")
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/{username}/posts")
-    public ResponseEntity<Set<PostDto>> getPosts(
+    public ResponseEntity<Set<PostPreviewDto>> getPosts(
             @PathVariable
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
@@ -79,7 +79,7 @@ public class UserController {
         if (!userService.isViewable(user, authUsername)) {
             throw new UserNotFoundException("User not found!");
         }
-        return ResponseEntity.ok(postService.findByUser(user, authUsername).stream().map(postMapper::toDto).collect(Collectors.toSet()));
+        return ResponseEntity.ok(postService.findByUser(user, authUsername).stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("/{username}/comments")

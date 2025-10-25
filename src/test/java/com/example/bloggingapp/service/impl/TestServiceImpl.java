@@ -2,6 +2,7 @@ package com.example.bloggingapp.service.impl;
 
 import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
+import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
@@ -44,11 +45,8 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
-    public void checkAllowViewingPostDtos(Set<PostDto> postDtos, String authUsername) {
-        Set<Post> posts = postDtos.stream().map(postDto -> postService.findById(postDto.id()).orElseThrow(() -> new RuntimeException("Post not found!"))).collect(Collectors.toSet());
-        for (PostDto postDto : postDtos) {
-            checkAllowViewingCommentDtos(postDto.comments(), authUsername);
-        }
+    public void checkAllowViewingPostPreviewDtos(Set<PostPreviewDto> postPreviewDtos, String authUsername) {
+        Set<Post> posts = postPreviewDtos.stream().map(postPreviewDto -> postService.findById(postPreviewDto.id()).orElseThrow(() -> new RuntimeException("Post not found!"))).collect(Collectors.toSet());
         if (authUsername.isEmpty()) {
             for (Post post : posts) {
                 User user = post.getUser();

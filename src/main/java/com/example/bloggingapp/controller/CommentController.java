@@ -72,7 +72,7 @@ public class CommentController {
         if (!commentService.isViewable(comment, authUsername)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (!commentService.getUriByIdAndContent(comment.getId(), comment.getContent()).equals(commentUri)) {
+        if (!commentService.getUriByIdAndContent(comment.getId(), comment.getContent()).equalsIgnoreCase(commentUri)) {
             throw new CommentNotFoundException("Comment not found!");
         }
         return ResponseEntity.ok(commentMapper.toDto(comment));

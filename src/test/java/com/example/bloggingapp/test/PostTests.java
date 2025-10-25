@@ -2,6 +2,7 @@ package com.example.bloggingapp.test;
 
 import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
+import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.request.CreatePostRequest;
 import com.example.bloggingapp.service.TestService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -105,9 +106,9 @@ public class PostTests {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
-        Set<PostDto> postDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        Set<PostPreviewDto> postPreviewDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
-        testService.checkAllowViewingPostDtos(postDtos, "");
+        testService.checkAllowViewingPostPreviewDtos(postPreviewDtos, "");
     }
 
     @Test
@@ -120,9 +121,9 @@ public class PostTests {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
-        Set<PostDto> postDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        Set<PostPreviewDto> postPreviewDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
-        testService.checkAllowViewingPostDtos(postDtos, "new_user");
+        testService.checkAllowViewingPostPreviewDtos(postPreviewDtos, "new_user");
     }
 
     @Test

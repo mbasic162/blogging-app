@@ -3,11 +3,13 @@ package com.example.bloggingapp.controller;
 import com.example.bloggingapp.annotation.validation.Between;
 import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
+import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.request.CreatePostRequest;
 import com.example.bloggingapp.exception.PostNotFoundException;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.mapper.PostMapper;
+import com.example.bloggingapp.mapper.PostPreviewMapper;
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
@@ -39,9 +41,11 @@ public class PostController {
     private final CommentService commentService;
     private final CommentMapper commentMapper = CommentMapper.INSTANCE;
     private final PostMapper postMapper = PostMapper.INSTANCE;
+    private final PostPreviewMapper postPreviewMapper = PostPreviewMapper.INSTANCE;
+
 
     @PostMapping("/")
-    public ResponseEntity<Set<PostDto>> getNPosts(
+    public ResponseEntity<Set<PostPreviewDto>> getNPosts(
             @Between(min = 1, max = 50, message = "Number of posts must be between 1 and 50!")
             Integer numberOfPosts,
             Authentication authentication
@@ -51,7 +55,7 @@ public class PostController {
             authUsername = authentication.getName();
         }
         Set<Post> posts = postService.findN(numberOfPosts, authUsername);
-        return ResponseEntity.ok(posts.stream().map(postMapper::toDto).collect(Collectors.toSet()));
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
     }
 
     @PostMapping("/create")
@@ -95,9 +99,13 @@ public class PostController {
         Post post = postService.findById(postService.getIdByUri(postUri)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
+            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
             authUsername = authentication.getName();
+            commentService.filterCommentsAuth(post.getComments(), authUser);
+        } else {
+            commentService.filterComments(post.getComments());
         }
-        if (!postService.getUriByTitleAndId(post.getTitle(), post.getId()).equals(postUri)) {
+        if (!postService.getUriByTitleAndId(post.getTitle(), post.getId()).equalsIgnoreCase(postUri)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!postService.isViewable(post, authUsername)) {

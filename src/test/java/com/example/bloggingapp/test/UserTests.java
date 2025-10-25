@@ -1,7 +1,7 @@
 package com.example.bloggingapp.test;
 
 import com.example.bloggingapp.dto.CommentDto;
-import com.example.bloggingapp.dto.PostDto;
+import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.UserDto;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
@@ -135,9 +135,9 @@ public class UserTests {
     @Transactional
     void getPosts_WithFirstUser_AsNewUser_ShouldReturnPostDtos() throws Exception {
         MvcResult result = mockMvc.perform(get("/user/first_user/posts")).andExpect(status().isOk()).andDo(print()).andReturn();
-        Set<PostDto> postDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        Set<PostPreviewDto> postPreviewDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
-        testService.checkAllowViewingPostDtos(postDtos, "new_user");
+        testService.checkAllowViewingPostPreviewDtos(postPreviewDtos, "new_user");
     }
 
     @Test
