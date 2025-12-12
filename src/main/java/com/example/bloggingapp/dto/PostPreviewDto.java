@@ -7,6 +7,7 @@ public record PostPreviewDto(
         String title,
         String username,
         Integer rating,
+        Integer commentCount,
         LocalDateTime createdAt
 ) {
 }

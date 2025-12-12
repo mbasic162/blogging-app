@@ -133,7 +133,7 @@ public class UserTests {
     @Order(7)
     @WithMockUser("new_user")
     @Transactional
-    void getPosts_WithFirstUser_AsNewUser_ShouldReturnPostDtos() throws Exception {
+    void getPosts_WithFirstUser_AsNewUser_ShouldReturnPostPreviewDtos() throws Exception {
         MvcResult result = mockMvc.perform(get("/user/first_user/posts")).andExpect(status().isOk()).andDo(print()).andReturn();
         Set<PostPreviewDto> postPreviewDtos = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });

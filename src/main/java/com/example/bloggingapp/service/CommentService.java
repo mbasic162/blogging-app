@@ -29,6 +29,8 @@ public interface CommentService {
 
     Long getIdByUri(String url);
 
+    Integer getViewableCommentCountByPost(Post post, String authUsername);
+
     void like(String authUsername, Long commentId);
 
     void removeLike(String authUsername, Long commentId);

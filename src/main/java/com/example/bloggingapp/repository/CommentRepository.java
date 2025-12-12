@@ -23,12 +23,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(value = "SELECT c from Comment c WHERE c.user=:auth_user")
     Set<Comment> findBySelf(@Param("auth_user") User authUser);
 
-
     @Query("SELECT c FROM Comment c WHERE c.parentPost = :post AND c.parentComment IS NULL ORDER BY c.rating DESC")
     Set<Comment> findByParentPost(Post post);
 
     @Query("SELECT c FROM Comment c WHERE c.parentComment = :comment ORDER BY c.rating DESC")
     Set<Comment> findByParentComment(Comment comment);
+
+    @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost= :post AND c.isDeleted = false AND c.isHidden = false AND c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true")
+    Integer getViewableCommentCountByPost(Post post);
+
+    @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost=:post AND c.isDeleted = false AND c.isHidden = false AND (c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true OR c.user=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=c.user)")
+    Integer getViewableCommentCountByPostAuth(Post post, @Param("auth_user") User authUser);
 
     @Transactional
     @Modifying

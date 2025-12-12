@@ -148,6 +148,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Integer getViewableCommentCountByPost(Post post, String authUsername) {
+        if (authUsername.isEmpty()) {
+            return commentRepository.getViewableCommentCountByPost(post);
+        }
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        return commentRepository.getViewableCommentCountByPostAuth(post, authUser);
+    }
+
+    @Override
     @Transactional
     public void like(String authUsername, Long commentId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));

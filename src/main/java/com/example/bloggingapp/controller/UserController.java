@@ -11,6 +11,7 @@ import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.mapper.PostPreviewMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
+import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.service.CommentService;
 import com.example.bloggingapp.service.PostService;
@@ -26,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,7 +81,12 @@ public class UserController {
         if (!userService.isViewable(user, authUsername)) {
             throw new UserNotFoundException("User not found!");
         }
-        return ResponseEntity.ok(postService.findByUser(user, authUsername).stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
+        Set<Post> posts = postService.findByUser(user, authUsername);
+        Set<PostPreviewDto> postPreviewDtos = new HashSet<>();
+        for (Post post : posts) {
+            postPreviewDtos.add(postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername)));
+        }
+        return ResponseEntity.ok(postPreviewDtos);
     }
 
     @GetMapping("/{username}/comments")

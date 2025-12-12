@@ -28,6 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,11 @@ public class PostController {
             authUsername = authentication.getName();
         }
         Set<Post> posts = postService.findN(numberOfPosts, authUsername);
-        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
+        Set<PostPreviewDto> postPreviewDtos = new HashSet<>();
+        for (Post post : posts) {
+            postPreviewDtos.add(postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername)));
+        }
+        return ResponseEntity.ok(postPreviewDtos);
     }
 
     @PostMapping("/create")

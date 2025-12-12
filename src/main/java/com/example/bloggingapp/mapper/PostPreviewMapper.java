@@ -10,8 +10,9 @@ import org.mapstruct.factory.Mappers;
 public interface PostPreviewMapper {
     PostPreviewMapper INSTANCE = Mappers.getMapper(PostPreviewMapper.class);
 
-    @Mapping(target = "username", source = "user.username")
-    PostPreviewDto toDto(Post post);
+    @Mapping(target = "username", source = "post.user.username")
+    @Mapping(target = "commentCount", source = "commentCount")
+    PostPreviewDto toDto(Post post, Integer commentCount);
 
     Post toEntity(PostPreviewDto postPreviewDto);
 }
