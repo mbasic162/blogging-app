@@ -14,14 +14,8 @@ import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @Query(value = "SELECT p FROM Post p WHERE p.user=:user AND p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin = false AND p.user.isPrivate = false AND p.user.isEnabled = true")
+    @Query(value = "SELECT p FROM Post p WHERE p.user=:user")
     Set<Post> findByUser(User user);
-
-    @Query(value = "SELECT p FROM Post p WHERE p.user=:user AND p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user)")
-    Set<Post> findByUserAuth(User user, @Param("auth_user") User authUser);
-
-    @Query(value = "SELECT p from Post p WHERE p.user=:auth_user")
-    Set<Post> findBySelf(@Param("auth_user") User authUser);
 
     @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
     Set<Post> findN(Limit n);

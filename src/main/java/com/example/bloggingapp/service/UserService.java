@@ -5,10 +5,13 @@ import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.model.User;
 
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserService {
 
     Optional<User> findByUsername(String username);
+
+    User getUserForViewByUsername(String username, String authUsername);
 
     User save(User user);
 
@@ -18,13 +21,17 @@ public interface UserService {
 
     boolean existsByEmailIgnoreCase(String email);
 
-    void follow(User user, String authUsername);
+    Set<User> findFollowers(String username, String authUsername);
 
-    void unfollow(User user, String authUsername);
+    Set<User> findFollowing(String username, String authUsername);
 
-    void block(User user, String authUsername);
+    void follow(String username, String authUsername);
 
-    void unblock(User user, String authUsername);
+    void unfollow(String username, String authUsername);
+
+    void block(String username, String authUsername);
+
+    void unblock(String username, String authUsername);
 
     String changeUsername(String newUsername, String authUsername);
 
@@ -48,7 +55,7 @@ public interface UserService {
 
     void enable(String username);
 
-    boolean isViewable(User user, String authUsername);
+    boolean isViewable(User user);
 
-    boolean isViewable(User user, User authUser);
+    boolean isViewableAuth(User user, User authUser);
 }

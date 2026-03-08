@@ -11,6 +11,7 @@ import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.mapper.PostPreviewMapper;
 import com.example.bloggingapp.mapper.UserFollowMapper;
 import com.example.bloggingapp.mapper.UserMapper;
+import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.service.CommentService;
@@ -27,7 +28,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,19 +51,11 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (!userService.isViewable(user, "")) {
-            throw new UserNotFoundException("User not found!");
-        }
+        String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
-            if (authUser.getBlockedUsers().contains(user)) {
-                return ResponseEntity.ok(new UserDto(username, null, null, null, true, false));
-            }
-            if (user.getBlockedUsers().contains(authUser)) {
-                return ResponseEntity.ok(new UserDto(username, null, null, null, false, true));
-            }
+            authUsername = authentication.getName();
         }
+        User user = userService.getUserForViewByUsername(username, authUsername);
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
@@ -73,20 +65,14 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        String authUsername = "";
+        String authUsername;
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
+        } else {
+            authUsername = "";
         }
-        if (!userService.isViewable(user, authUsername)) {
-            throw new UserNotFoundException("User not found!");
-        }
-        Set<Post> posts = postService.findByUser(user, authUsername);
-        Set<PostPreviewDto> postPreviewDtos = new HashSet<>();
-        for (Post post : posts) {
-            postPreviewDtos.add(postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername)));
-        }
-        return ResponseEntity.ok(postPreviewDtos);
+        Set<Post> posts = postService.findByUsername(username, authUsername);
+        return ResponseEntity.ok(posts.stream().map(post -> postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername))).collect(Collectors.toSet()));
     }
 
     @GetMapping("/{username}/comments")
@@ -99,11 +85,9 @@ public class UserController {
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
-            if (!userService.isViewable(user, authUsername)) {
-                throw new UserNotFoundException("User not found!");
-            }
         }
-        return ResponseEntity.ok(commentService.findByUser(user, authUsername).stream().map(commentMapper::toDto).collect(Collectors.toSet()));
+        Set<Comment> comments = commentService.findByUser(user, authUsername);
+        return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")
@@ -112,15 +96,12 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
         }
-        if (!userService.isViewable(user, authUsername)) {
-            throw new UserNotFoundException("User not found!");
-        }
-        return ResponseEntity.ok(user.getFollowers().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
+        Set<User> followers = userService.findFollowers(username, authUsername);
+        return ResponseEntity.ok(followers.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/following")
@@ -129,15 +110,12 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
         }
-        if (!userService.isViewable(user, authUsername)) {
-            throw new UserNotFoundException("User not found!");
-        }
-        return ResponseEntity.ok(user.getFollowing().stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
+        Set<User> following = userService.findFollowing(username, authUsername);
+        return ResponseEntity.ok(following.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
     @PostMapping("/follow")
@@ -146,11 +124,7 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (!userService.isViewable(user, authentication.getName())) {
-            throw new UserNotFoundException("User not found!");
-        }
-        userService.follow(user, authentication.getName());
+        userService.follow(username, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
@@ -160,11 +134,7 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (!userService.isViewable(user, authentication.getName())) {
-            throw new UserNotFoundException("User not found!");
-        }
-        userService.unfollow(user, authentication.getName());
+        userService.unfollow(username, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
@@ -174,8 +144,7 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        userService.block(user, authentication.getName());
+        userService.block(username, authentication.getName());
         return ResponseEntity.ok().build();
     }
 
@@ -185,8 +154,7 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        userService.unblock(user, authentication.getName());
+        userService.unblock(username, authentication.getName());
         return ResponseEntity.ok().build();
     }
 

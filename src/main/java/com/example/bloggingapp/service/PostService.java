@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface PostService {
-    Set<Post> findByUser(User user, String authUsername);
+    Set<Post> findByUsername(String username, String authUsername);
 
     Optional<Post> findById(Long id);
 
@@ -16,9 +16,11 @@ public interface PostService {
 
     Set<Post> findN(Integer numberOfPosts, String authUsername);
 
-    String getUriByTitleAndId(String title, Long postId);
+    String getURIByIdAndTitle(Long postId, String title);
 
-    Long getIdByUri(String uri);
+    Long getIdByURI(String URI);
+
+    Post getPostForViewByURI(String postURI, String authUsername);
 
     void like(String authUsername, Long postId);
 
@@ -50,5 +52,7 @@ public interface PostService {
 
     void filterCommentsAuth(Set<Comment> comments, User authUser);
 
-    boolean isViewable(Post post, String authUsername);
+    boolean isViewable(Post post);
+
+    boolean isViewableAuth(Post post, User authUser);
 }

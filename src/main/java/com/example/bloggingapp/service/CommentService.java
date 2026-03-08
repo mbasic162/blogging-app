@@ -15,9 +15,11 @@ public interface CommentService {
 
     Set<Comment> findByUser(User user, String authUsername);
 
-    Set<Comment> findByParentPost(Post post, String authUsername);
+    Set<Comment> findByParentPost(String postURI, String authUsername);
 
-    Set<Comment> findByParentComment(Comment comment, String authUsername);
+    Set<Comment> findByParentComment(String commentURI, String authUsername);
+
+    Comment getCommentForViewByURI(String commentURI, String authUsername);
 
     void filterCommentsAuth(Set<Comment> comments, User authUser);
 
@@ -25,35 +27,37 @@ public interface CommentService {
 
     Optional<Comment> findById(Long commentId);
 
-    String getUriByIdAndContent(Long commentId, String content);
+    String getURIByIdAndContent(Long commentId, String content);
 
-    Long getIdByUri(String url);
+    Long getIdByURI(String url);
 
     Integer getViewableCommentCountByPost(Post post, String authUsername);
 
-    void like(String authUsername, Long commentId);
+    void like(Long commentId, String authUsername);
 
-    void removeLike(String authUsername, Long commentId);
+    void removeLike(Long commentId, String authUsername);
 
-    void dislike(String authUsername, Long commentId);
+    void dislike(Long commentId, String authUsername);
 
-    void removeDislike(String authUsername, Long commentId);
+    void removeDislike(Long commentId, String authUsername);
 
-    void tempDelete(String authUsername, Long commentId);
+    void tempDelete(Long commentId, String authUsername);
 
-    void undelete(String authUsername, Long commentId);
+    void undelete(Long commentId, String authUsername);
 
-    void permanentlyDelete(String authUsername, Long commentId);
+    void permanentlyDelete(Long commentId, String authUsername);
 
-    void hide(String authUsername, Long commentId);
+    void hide(Long commentId, String authUsername);
 
-    void unhide(String authUsername, Long commentId);
+    void unhide(Long commentId, String authUsername);
 
-    void changeContent(String authUsername, Long commentId, String newContent);
+    void changeContent(Long commentId, String authUsername, String newContent);
 
     void tempDeleteByAdmin(Long commentId);
 
     void undeleteByAdmin(Long commentId);
 
-    boolean isViewable(Comment comment, String authUsername);
+    boolean isViewable(Comment comment);
+
+    boolean isViewableAuth(Comment comment, User authUser);
 }

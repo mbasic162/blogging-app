@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -52,8 +53,69 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void follow(User user, String authUsername) {
+    public User getUserForViewByUsername(String username, String authUsername) {
+        User user = findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (authUsername.isEmpty()) {
+            if (!isViewable(user)) {
+                throw new UserNotFoundException("User not found!");
+            }
+            return user;
+        }
+        User authUser = findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (authUser.getBlockedUsers().contains(user)) {
+            return new User(username, null, null, null, false);
+        }
+        if (user.getBlockedUsers().contains(authUser)) {
+            return new User(username, null, null, null, false);
+        }
+        return user;
+    }
+
+    @Override
+    public Set<User> findFollowers(String username, String authUsername) {
+        User user = findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        Set<User> followers = user.getFollowers();
+        if (authUsername.isEmpty()) {
+            if (!isViewable(user)) {
+                throw new UserNotFoundException("User not found!");
+            }
+            followers.removeIf(follower -> !isViewable(user));
+            return followers;
+        }
+        User authUser = findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!isViewableAuth(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
+        followers.removeIf(follower -> !isViewableAuth(user, authUser));
+        return followers;
+    }
+
+    @Override
+    public Set<User> findFollowing(String username, String authUsername) {
+        User user = findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        Set<User> following = user.getFollowing();
+        if (authUsername.isEmpty()) {
+            if (!isViewable(user)) {
+                throw new UserNotFoundException("User not found!");
+            }
+            following.removeIf(follower -> !isViewable(user));
+            return following;
+        }
+        User authUser = findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!isViewableAuth(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
+        following.removeIf(follower -> !isViewableAuth(user, authUser));
+        return following;
+    }
+
+    @Override
+    public void follow(String username, String authUsername) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (!isViewableAuth(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot follow yourself!");
         }
@@ -64,8 +126,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void unfollow(User user, String authUsername) {
+    public void unfollow(String username, String authUsername) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (!isViewableAuth(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
+        }
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot unfollow yourself!");
         }
@@ -76,9 +142,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void block(User user, String authUsername) {
+    public void block(String username, String authUsername) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (user.getBlockedUsers().contains(authUser) || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
+        if (!isViewable(user) || user.getBlockedUsers().contains(authUser)) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -97,9 +164,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void unblock(User user, String authUsername) {
+    public void unblock(String username, String authUsername) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (user.getBlockedUsers().contains(authUser) || user.getPrivate() || user.getDeleted() || !user.getEnabled()) {
+        if (!isViewable(user) || user.getBlockedUsers().contains(authUser)) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
@@ -231,19 +299,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isViewable(User user, String authUsername) {
-        if (authUsername.isEmpty()) {
-            return !user.getPrivate() && !user.getDeleted() && user.getEnabled();
-        }
-        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (authUser.equals(user)) {
-            return true;
-        }
-        return !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
+    public boolean isViewable(User user) {
+        return !user.getPrivate() && !user.getDeleted() && user.getEnabled();
     }
 
     @Override
-    public boolean isViewable(User user, User authUser) {
+    public boolean isViewableAuth(User user, User authUser) {
         if (authUser.equals(user)) {
             return true;
         }

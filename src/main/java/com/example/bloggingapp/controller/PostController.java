@@ -5,7 +5,6 @@ import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.PostDto;
 import com.example.bloggingapp.dto.PostPreviewDto;
 import com.example.bloggingapp.dto.request.CreatePostRequest;
-import com.example.bloggingapp.exception.PostNotFoundException;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.mapper.PostMapper;
@@ -75,77 +74,49 @@ public class PostController {
     }
 
     @PostMapping("/uri")
-    public ResponseEntity<String> getUri(
+    public ResponseEntity<String> getURI(
             @NotNull Long postId,
-            @NotBlank(message = "Title cannot be blank!") String title,
-            Authentication authentication
+            @NotBlank(message = "Title cannot be blank!") String title
     ) {
-        Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        String titleById = post.getTitle();
-        String authUsername = "";
-        if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
-        }
-        if (!titleById.equals(title)) {
-            throw new PostNotFoundException("Post not found!");
-        }
-        if (!postService.isViewable(post, authUsername)) {
-            throw new PostNotFoundException("Post not found!");
-        }
-        return ResponseEntity.ok(postService.getUriByTitleAndId(title, postId));
+        return ResponseEntity.ok(postService.getURIByIdAndTitle(postId, title));
     }
 
     @GetMapping("/{post_uri}")
     public ResponseEntity<PostDto> getPost(
             @PathVariable(name = "post_uri")
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Post post = postService.findById(postService.getIdByUri(postUri)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
-            User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
             authUsername = authentication.getName();
-            commentService.filterCommentsAuth(post.getComments(), authUser);
-        } else {
-            commentService.filterComments(post.getComments());
         }
-        if (!postService.getUriByTitleAndId(post.getTitle(), post.getId()).equalsIgnoreCase(postUri)) {
-            throw new PostNotFoundException("Post not found!");
-        }
-        if (!postService.isViewable(post, authUsername)) {
-            throw new PostNotFoundException("Post not found!");
-        }
+        Post post = postService.getPostForViewByURI(postURI, authUsername);
         return ResponseEntity.ok(postMapper.toDto(post));
     }
 
     @GetMapping("{post_uri}/comments")
     public ResponseEntity<Set<CommentDto>> comments(
             @PathVariable(name = "post_uri")
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
-        Post post = postService.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         Set<Comment> comments;
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
         }
-        if (!postService.isViewable(post, authUsername)) {
-            throw new PostNotFoundException("Post not found!");
-        }
-        comments = commentService.findByParentPost(post, authUsername);
+        comments = commentService.findByParentPost(postURI, authUsername);
         return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
     }
 
     @PostMapping("/like")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> like(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.like(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -153,10 +124,10 @@ public class PostController {
     @PostMapping("/removeLike")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> removeLike(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.removeLike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -164,10 +135,10 @@ public class PostController {
     @PostMapping("/dislike")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> dislike(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.dislike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -175,10 +146,10 @@ public class PostController {
     @PostMapping("/removeDislike")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> removeDislike(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.removeDislike(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -186,10 +157,10 @@ public class PostController {
     @PostMapping("/delete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> tempDelete(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.tempDelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -197,10 +168,10 @@ public class PostController {
     @PostMapping("/undelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> undelete(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.undelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -208,10 +179,10 @@ public class PostController {
     @PostMapping("/hide")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> hide(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.hide(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -219,10 +190,10 @@ public class PostController {
     @PostMapping("/unhide")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> unhide(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.unhide(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -230,10 +201,10 @@ public class PostController {
     @PostMapping("/permanentlyDelete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> permanentlyDelete(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.permanentlyDelete(authentication.getName(), postId);
         return ResponseEntity.ok().build();
     }
@@ -241,12 +212,12 @@ public class PostController {
     @PostMapping("/changeTitle")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeTitle(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication,
             @NotBlank(message = "Title cannot be blank!")
             @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters long!") String newTitle
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.changeTitle(authentication.getName(), postId, newTitle);
         return ResponseEntity.ok().build();
     }
@@ -254,12 +225,12 @@ public class PostController {
     @PostMapping("/changeContent")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changeContent(
-            @NotBlank(message = "Post uri cannot be blank!") String postUri,
+            @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication,
             @NotBlank(message = "Content cannot be blank!")
             @Size(min = 100, max = 15000, message = "Content must be between 100 and 15000 characters long!") String newContent
     ) {
-        Long postId = postService.getIdByUri(postUri);
+        Long postId = postService.getIdByURI(postURI);
         postService.changeContent(authentication.getName(), postId, newContent);
         return ResponseEntity.ok().build();
     }

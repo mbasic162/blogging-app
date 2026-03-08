@@ -30,18 +30,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findByUser(User user, String authUsername) {
-        Set<Post> posts;
+    public Set<Post> findByUsername(String username, String authUsername) {
+        User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        Set<Post> posts = postRepository.findByUser(user);
         if (authUsername.isEmpty()) {
-            posts = postRepository.findByUser(user);
+            if (!userService.isViewable(user)) {
+                throw new UserNotFoundException("User not found!");
+            }
+            posts.removeIf(post -> !isViewable(post));
             return posts;
         }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (user.equals(authUser)) {
-            posts = postRepository.findBySelf(user);
-            return posts;
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!userService.isViewableAuth(user, authUser)) {
+            throw new UserNotFoundException("User not found!");
         }
-        posts = postRepository.findByUserAuth(user, authUser);
+        posts.removeIf(post -> !isViewableAuth(post, authUser));
         return posts;
     }
 
@@ -63,7 +66,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public String getUriByTitleAndId(String title, Long postId) {
+    public String getURIByIdAndTitle(Long postId, String title) {
         if (title.length() > 30) {
             title = title.substring(0, 30);
         }
@@ -71,8 +74,29 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Long getIdByUri(String uri) {
-        return Long.parseLong(uri.substring(uri.lastIndexOf('-') + 1));
+    public Long getIdByURI(String URI) {
+        return Long.parseLong(URI.substring(URI.lastIndexOf('-') + 1));
+    }
+
+    @Override
+    public Post getPostForViewByURI(String postURI, String authUsername) {
+        Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        if (!getURIByIdAndTitle(post.getId(), post.getTitle()).equalsIgnoreCase(postURI)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        if (authUsername.isEmpty()) {
+            if (!isViewable(post)) {
+                throw new PostNotFoundException("Post not found!");
+            }
+            filterComments(post.getComments());
+            return post;
+        }
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!isViewableAuth(post, authUser)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        filterCommentsAuth(post.getComments(), authUser);
+        return post;
     }
 
     @Override
@@ -80,7 +104,7 @@ public class PostServiceImpl implements PostService {
     public void like(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (post.getLikedBy().contains(authUser)) {
@@ -99,7 +123,7 @@ public class PostServiceImpl implements PostService {
     public void removeLike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getLikedBy().contains(authUser)) {
@@ -114,7 +138,7 @@ public class PostServiceImpl implements PostService {
     public void dislike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (post.getDislikedBy().contains(authUser)) {
@@ -134,7 +158,7 @@ public class PostServiceImpl implements PostService {
     public void removeDislike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getDislikedBy().contains(authUser)) {
@@ -148,7 +172,7 @@ public class PostServiceImpl implements PostService {
     public void changeTitle(String authUsername, Long postId, String newTitle) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!authUser.equals(post.getUser())) {
@@ -167,7 +191,7 @@ public class PostServiceImpl implements PostService {
     public void changeContent(String authUsername, Long postId, String newContent) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!authUser.equals(post.getUser())) {
@@ -186,7 +210,7 @@ public class PostServiceImpl implements PostService {
     public void tempDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -200,8 +224,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void undelete(String authUsername, Long postId) {
+        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getDeleted()) {
@@ -214,7 +239,7 @@ public class PostServiceImpl implements PostService {
     public void permanentlyDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -227,7 +252,7 @@ public class PostServiceImpl implements PostService {
     public void hide(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewable(post, authUsername)) {
+        if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -288,7 +313,7 @@ public class PostServiceImpl implements PostService {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
             User user = comment.getUser();
-            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)) {
+            if (!user.equals(authUser) && (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user))) {
                 i.remove();
             } else {
                 filterCommentsAuth(comment.getComments(), authUser);
@@ -297,15 +322,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public boolean isViewable(Post post, String authUsername) {
+    public boolean isViewable(Post post) {
         User user = post.getUser();
-        if (authUsername.isEmpty()) {
-            return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user, "");
-        }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user);
+    }
+
+    @Override
+    public boolean isViewableAuth(Post post, User authUser) {
+        User user = post.getUser();
         if (authUser.equals(user)) {
             return true;
         }
-        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user, authUser);
+        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewableAuth(user, authUser);
     }
 }
