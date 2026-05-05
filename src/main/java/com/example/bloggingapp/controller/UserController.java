@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -225,6 +226,16 @@ public class UserController {
             Authentication authentication
     ) {
         userService.changeDescription(newDescription, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/changeProfilePicture")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeProfilePicture(
+            MultipartFile newProfilePicture,
+            Authentication authentication
+    ) {
+        userService.changeProfilePicture(newProfilePicture, authentication.getName());
         return ResponseEntity.ok().build();
     }
 

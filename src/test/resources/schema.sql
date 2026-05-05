@@ -9,7 +9,8 @@ create table users
     is_private  bit          not null,
     is_enabled  bit          not null,
     is_deleted  bit          not null,
-    description varchar(200) null
+    description varchar(200) null,
+    profile_picture_name varchar(50) null
 );
 
 create table posts

@@ -21,18 +21,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -269,11 +271,17 @@ public class UserTests {
     @Test
     @Order(12)
     void signup_WithTestUser_ShouldReturnUserDto() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("test_user", "test@example.com", "testUser", "Test User", true);
-        mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                        .content(objectWriter.writeValueAsString(registerRequest)))
-                .andDo(print())
-                .andExpect(status().isCreated());
+        RegisterRequest registerRequest = new RegisterRequest("test_user", "test@example.com", "testUser", "Test User", null, true);
+        mockMvc.perform(multipart("/auth/signup")
+                        .file(new MockMultipartFile("Image", (byte[]) null))
+                        .param("username", registerRequest.username())
+                        .param("email", registerRequest.email())
+                        .param("password", registerRequest.password())
+                        .param("description", registerRequest.description())
+                        .param("isPrivate", String.valueOf(registerRequest.isPrivate()))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isCreated())
+                .andDo(print());
     }
 
     @Test

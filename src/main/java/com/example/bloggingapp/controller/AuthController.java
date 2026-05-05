@@ -6,7 +6,7 @@ import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
 import com.example.bloggingapp.mapper.UserMapper;
 import com.example.bloggingapp.model.User;
-import com.example.bloggingapp.service.impl.AuthService;
+import com.example.bloggingapp.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> register(@RequestBody @Valid RegisterRequest registerRequest) {
+    public ResponseEntity<UserDto> register(@Valid RegisterRequest registerRequest) {
         User user = authService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(user));
     }

@@ -1,12 +1,14 @@
 package com.example.bloggingapp.service.impl;
 
 
+import com.example.bloggingapp.config.FileStorageConfig;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.repository.UserRepository;
 import com.example.bloggingapp.security.JwtUtils;
+import com.example.bloggingapp.service.ImageService;
 import com.example.bloggingapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +17,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final ImageService imageService;
 
     @Override
     public User save(User user) {
@@ -63,10 +71,10 @@ public class UserServiceImpl implements UserService {
         }
         User authUser = findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (authUser.getBlockedUsers().contains(user)) {
-            return new User(username, null, null, null, false);
+            return new User(username, null, null, null, null, false);
         }
         if (user.getBlockedUsers().contains(authUser)) {
-            return new User(username, null, null, null, false);
+            return new User(username, null, null, null, null, false);
         }
         return user;
     }
@@ -231,6 +239,30 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("New description must be different from the old one!");
         }
         userRepository.changeDescription(authUser, newDescription);
+    }
+
+    @Override
+    public void changeProfilePicture(MultipartFile profilePicture, String authUsername) {
+        User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
+        if (profilePicture == null || profilePicture.isEmpty()) {
+            userRepository.changeProfilePictureName(authUser, "default.jpg");
+            return;
+        }
+        if (!imageService.isValid(profilePicture)) {
+            throw new IllegalArgumentException("Profile picture is invalid!");
+        }
+        String profilePictureName = authUser.getProfilePictureName();
+        if (authUser.getProfilePictureName() == null) {
+            profilePictureName = "default.jpg";
+        }
+        Path path = Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, profilePictureName);
+        userRepository.changeProfilePictureName(authUser, imageService.save(profilePicture));
+        if (!profilePictureName.equals("default.jpg")) {
+            try {
+                Files.delete(path);
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     @Override

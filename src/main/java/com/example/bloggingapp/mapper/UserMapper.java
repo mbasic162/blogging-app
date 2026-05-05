@@ -12,7 +12,19 @@ public interface UserMapper {
 
     @Mapping(target = "isAuthUserBlocked", constant = "false")
     @Mapping(target = "isUserBlocked", constant = "false")
+    @Mapping(target = "profilePicture",
+            expression = "java(addPrefix(user))")
     UserDto toDto(User user);
 
-    User toEntity(UserDto userDto);
+    default String addPrefix(User user) {
+        String profilePictureName = user.getProfilePictureName();
+        if (profilePictureName == null || profilePictureName.endsWith(".jpg")) {
+            return "data:image/jpg;base64," + user.getProfilePicture();
+        }
+        if (profilePictureName.endsWith(".png")) {
+            return "data:image/png;base64," + user.getProfilePicture();
+        }
+        return "data:image/jpeg;base64," + user.getProfilePicture();
+
+    }
 }

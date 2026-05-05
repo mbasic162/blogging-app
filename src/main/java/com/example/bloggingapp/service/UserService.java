@@ -3,6 +3,7 @@ package com.example.bloggingapp.service;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.model.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +41,8 @@ public interface UserService {
     void changePassword(PasswordChangeRequest request, String authUsername);
 
     void changeDescription(String newDescription, String authUsername);
+
+    void changeProfilePicture(MultipartFile profilePicture, String authUsername);
 
     void goPrivate(String authUsername);
 

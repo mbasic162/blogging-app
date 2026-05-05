@@ -13,6 +13,4 @@ public interface PostPreviewMapper {
     @Mapping(target = "username", source = "post.user.username")
     @Mapping(target = "commentCount", source = "commentCount")
     PostPreviewDto toDto(Post post, Integer commentCount);
-
-    Post toEntity(PostPreviewDto postPreviewDto);
 }

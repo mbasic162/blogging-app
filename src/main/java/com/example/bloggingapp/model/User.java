@@ -1,5 +1,6 @@
 package com.example.bloggingapp.model;
 
+import com.example.bloggingapp.config.FileStorageConfig;
 import com.example.bloggingapp.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -9,7 +10,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,6 +49,9 @@ public class User {
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private List<Role> roles = List.of(Role.USER);
+    @Column(name = "profile_picture_name")
+    @Size(max = 50)
+    private String profilePictureName;
 
     @ManyToMany
     @JoinTable(
@@ -81,11 +90,26 @@ public class User {
     @ManyToMany(mappedBy = "dislikedBy")
     private Set<Comment> dislikedComments;
 
-    public User(String username, String email, String password, String description, boolean isPrivate) {
+
+    public String getProfilePicture() {
+        if (this.profilePictureName == null) {
+            this.profilePictureName = "default.jpg";
+        }
+        String profilePicturePath = this.profilePictureName;
+        Path path = Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, profilePicturePath);
+        try {
+            return Base64.getEncoder().encodeToString(Files.readAllBytes(path));
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    public User(String username, String email, String password, String description, String profilePictureName, boolean isPrivate) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.description = description;
+        this.profilePictureName = profilePictureName;
         this.isPrivate = isPrivate;
     }
 

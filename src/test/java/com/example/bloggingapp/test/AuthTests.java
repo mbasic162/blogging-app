@@ -1,7 +1,9 @@
 package com.example.bloggingapp.test;
 
+import com.example.bloggingapp.config.FileStorageConfig;
 import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
+import com.example.bloggingapp.service.ImageTestService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -13,13 +15,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Paths;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -33,6 +42,13 @@ public class AuthTests {
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
+    private final ImageTestService imageTestService;
+
+    @Autowired
+    public AuthTests(ImageTestService imageTestService) {
+        this.imageTestService = imageTestService;
+    }
+
 
     @Test
     @Order(0)
@@ -42,9 +58,16 @@ public class AuthTests {
     @Test
     @Order(1)
     void signup_WithNewUser_ShouldReturnNewUserDto() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("new_user", "new@example.com", "newUser", "New User", false);
-        mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                        .content(objectWriter.writeValueAsString(registerRequest)))
+        MultipartFile profilePicture = imageTestService.getImage(Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, "test.png"));
+        RegisterRequest registerRequest = new RegisterRequest("new_user", "new@example.com", "newUser", "New User", profilePicture, false);
+        mockMvc.perform(multipart("/auth/signup")
+                        .file(new MockMultipartFile(registerRequest.profilePicture().getName(), registerRequest.profilePicture().getOriginalFilename(), registerRequest.profilePicture().getContentType(), registerRequest.profilePicture().getBytes()))
+                        .param("username", registerRequest.username())
+                        .param("email", registerRequest.email())
+                        .param("password", registerRequest.password())
+                        .param("description", registerRequest.description())
+                        .param("isPrivate", String.valueOf(registerRequest.isPrivate()))
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(print())
                 .andExpect(status().isCreated());
     }

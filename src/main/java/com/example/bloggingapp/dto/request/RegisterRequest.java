@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
 
 public record RegisterRequest(
@@ -20,6 +21,7 @@ public record RegisterRequest(
         String password,
         @Size(max = 200, message = "Description must be at most 200 characters!")
         String description,
+        MultipartFile profilePicture,
         boolean isPrivate
 ) {
 }

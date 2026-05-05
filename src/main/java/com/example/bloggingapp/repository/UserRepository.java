@@ -46,6 +46,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Transactional
     @Modifying
+    @Query(value = "UPDATE User u SET u.profilePictureName=:new_profile_picture_name WHERE u=:user")
+    void changeProfilePictureName(User user, @Param("new_profile_picture_name") String newProfilePictureName);
+
+    @Transactional
+    @Modifying
     @Query(value = "UPDATE User u SET u.isPrivate=true WHERE u=:user")
     void goPrivate(User user);
 
