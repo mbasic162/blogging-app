@@ -67,23 +67,25 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String getURIByIdAndTitle(Long postId, String title) {
-        if (title.length() > 30) {
+        if (title.length() > 30 && title.charAt(30) != ' ') {
+            title = title.substring(0, 31);
+        } else if (title.length() > 30) {
             title = title.substring(0, 30);
         }
         return UriSanitizer.encode(title + "-" + postId);
     }
 
     @Override
-    public Long getIdByURI(String URI) {
-        return Long.parseLong(URI.substring(URI.lastIndexOf('-') + 1));
+    public Long getIdByURI(String postURI) {
+        if (!existsByURI(postURI)) {
+            throw new PostNotFoundException("Post not found!");
+        }
+        return Long.parseLong(postURI.substring(postURI.lastIndexOf('-') + 1));
     }
 
     @Override
     public Post getPostForViewByURI(String postURI, String authUsername) {
         Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!getURIByIdAndTitle(post.getId(), post.getTitle()).equalsIgnoreCase(postURI)) {
-            throw new PostNotFoundException("Post not found!");
-        }
         if (authUsername.isEmpty()) {
             if (!isViewable(post)) {
                 throw new PostNotFoundException("Post not found!");
@@ -97,6 +99,13 @@ public class PostServiceImpl implements PostService {
         }
         filterCommentsAuth(post.getComments(), authUser);
         return post;
+    }
+
+    @Override
+    public boolean existsByURI(String postURI) {
+        Long id = Long.parseLong(postURI.substring(postURI.lastIndexOf('-') + 1));
+        Post post = findById(id).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        return getURIByIdAndTitle(post.getId(), post.getTitle()).equalsIgnoreCase(postURI);
     }
 
     @Override

@@ -46,8 +46,8 @@ public class CommentTests {
     private final TestService testService;
     private final String firstCommentURI = "comment-on-post-1-1";
     private final String secondCommentURI = "comment-on-post-2-2";
-    private final String fourteenthCommentURI = "this-is-a-comment-on-second-post-14";
-    private final String sixteenthCommentURI = "this-is-a-comment-on-fourteenth-comment-16";
+    private final String fourteenthCommentURI = "this-is-a-comment-on-second-pos-14";
+    private final String sixteenthCommentURI = "this-is-a-comment-on-fourteenth-16";
 
     @Autowired
     public CommentTests(TestService testService) {

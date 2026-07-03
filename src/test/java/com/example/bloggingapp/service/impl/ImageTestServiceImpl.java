@@ -16,7 +16,7 @@ public class ImageTestServiceImpl implements ImageTestService {
     @Override
     public MultipartFile getImage(Path path) {
         String extension = StringUtils.getFilenameExtension(path.getFileName().toString());
-        if(extension == null){
+        if (extension == null) {
             throw new IllegalArgumentException("Invalid image!");
         }
         try {

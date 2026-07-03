@@ -87,8 +87,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Long getIdByURI(String URI) {
-        return Long.parseLong(URI.substring(URI.lastIndexOf('-') + 1));
+    public Long getIdByURI(String commentURI) {
+        if (!existsByURI(commentURI)) {
+            throw new CommentNotFoundException("Comment not found!");
+        }
+        return Long.parseLong(commentURI.substring(commentURI.lastIndexOf('-') + 1));
     }
 
     @Override
@@ -132,9 +135,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment getCommentForViewByURI(String commentURI, String authUsername) {
         Comment comment = findById(getIdByURI(commentURI)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
-        if (!getURIByIdAndContent(comment.getId(), comment.getContent()).equalsIgnoreCase(commentURI)) {
-            throw new CommentNotFoundException("Comment not found!");
-        }
         if (authUsername.isEmpty()) {
             if (!isViewable(comment)) {
                 throw new CommentNotFoundException("Comment not found!");
@@ -159,6 +159,13 @@ public class CommentServiceImpl implements CommentService {
         }
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         return commentRepository.getViewableCommentCountByPostAuth(post, authUser);
+    }
+
+    @Override
+    public boolean existsByURI(String commentURI) {
+        Long id = Long.parseLong(commentURI.substring(commentURI.lastIndexOf('-') + 1));
+        Comment comment = findById(id).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        return getURIByIdAndContent(comment.getId(), comment.getContent()).equalsIgnoreCase(commentURI);
     }
 
     @Override

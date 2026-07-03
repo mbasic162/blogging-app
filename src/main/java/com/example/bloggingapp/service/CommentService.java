@@ -21,6 +21,8 @@ public interface CommentService {
 
     Comment getCommentForViewByURI(String commentURI, String authUsername);
 
+    boolean existsByURI(String commentURI);
+
     void filterCommentsAuth(Set<Comment> comments, User authUser);
 
     void filterComments(Set<Comment> comments);

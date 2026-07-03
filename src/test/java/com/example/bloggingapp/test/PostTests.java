@@ -53,6 +53,7 @@ public class PostTests {
     private final String thirdPostURI = "third-users-post-3";
     private final String fourthPostURI = "new-users-post-4";
     private final String fifthPostURI = "private-users-post-5";
+    private final String fourthPostNewURI = "new-title-4";
 
     @Autowired
     public PostTests(TestService testService) {
@@ -273,7 +274,7 @@ public class PostTests {
     @WithMockUser("new_user")
     public void changeContent_WithFourthPost_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/post/changeContent")
-                        .param("postURI", fourthPostURI)
+                        .param("postURI", fourthPostNewURI)
                         .param("newContent", "this text has to have 100 characters minimum, this text has to have 100 characters minimum, this text has to have 100 characters minimum, this text has to have 100 characters minimum, this text has to have 100 characters minimum, this text has to have 100 characters minimum, new content"))
                 .andExpect(status().isOk());
     }
@@ -283,7 +284,7 @@ public class PostTests {
     @WithMockUser("new_user")
     public void permanentlyDelete_WithFourthPost_AsNewUser_ShouldReturnOk() throws Exception {
         mockMvc.perform(post("/post/permanentlyDelete")
-                        .param("postURI", fourthPostURI))
+                        .param("postURI", fourthPostNewURI))
                 .andExpect(status().isOk());
     }
 

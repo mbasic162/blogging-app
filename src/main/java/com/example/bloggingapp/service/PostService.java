@@ -18,9 +18,11 @@ public interface PostService {
 
     String getURIByIdAndTitle(Long postId, String title);
 
-    Long getIdByURI(String URI);
+    Long getIdByURI(String postURI);
 
     Post getPostForViewByURI(String postURI, String authUsername);
+
+    boolean existsByURI(String postURI);
 
     void like(String authUsername, Long postId);
 
