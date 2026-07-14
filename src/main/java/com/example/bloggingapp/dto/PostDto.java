@@ -9,6 +9,7 @@ public record PostDto(
         String title,
         String content,
         String username,
+        String profilePicture,
         Integer rating,
         LocalDateTime createdAt,
         Set<CommentDto> comments

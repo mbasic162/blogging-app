@@ -44,20 +44,19 @@ public class PostController {
     private final PostPreviewMapper postPreviewMapper = PostPreviewMapper.INSTANCE;
 
 
-    @PostMapping("/")
+    @GetMapping("/")
     public ResponseEntity<Set<PostPreviewDto>> getNPosts(
-            @Between(min = 1, max = 50, message = "Number of posts must be between 1 and 50!")
-            Integer numberOfPosts,
             Authentication authentication
     ) {
         String authUsername = "";
         if (authentication != null && authentication.isAuthenticated()) {
             authUsername = authentication.getName();
         }
+        Integer numberOfPosts = 10;
         Set<Post> posts = postService.findN(numberOfPosts, authUsername);
         Set<PostPreviewDto> postPreviewDtos = new HashSet<>();
         for (Post post : posts) {
-            postPreviewDtos.add(postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername)));
+            postPreviewDtos.add(postPreviewMapper.toDto(post));
         }
         return ResponseEntity.ok(postPreviewDtos);
     }

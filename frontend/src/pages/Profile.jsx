@@ -2,7 +2,7 @@ import {useState} from "react";
 import {useParams} from "react-router-dom";
 import {Avatar, Container, Typography, Box, Grid, CssBaseline, Tab, Divider} from "@mui/material"
 import {TabContext, TabList, TabPanel} from "@mui/lab"
-import ContentContainer from "/src/components/ContentContainer"
+import PreviewContainer from "/src/components/PreviewContainer"
 import PostPreview from "/src/components/PostPreview"
 import Comment from "/src/components/Comment";
 
@@ -61,24 +61,24 @@ export default function Profile() {
                         </TabList>
                         <Divider/>
                         <TabPanel value="Posts">
-                            <ContentContainer>
+                            <PreviewContainer>
                                 <PostPreview/>
                                 <PostPreview/>
                                 <PostPreview/>
                                 <PostPreview/>
                                 <PostPreview/>
                                 <PostPreview/>
-                            </ContentContainer>
+                            </PreviewContainer>
                         </TabPanel>
                         <TabPanel value="Comments">
-                            <ContentContainer>
+                            <PreviewContainer>
                                 <Comment/>
                                 <Comment/>
                                 <Comment/>
                                 <Comment/>
                                 <Comment/>
                                 <Comment/>
-                            </ContentContainer>
+                            </PreviewContainer>
                         </TabPanel>
                     </TabContext>
                 </Box>

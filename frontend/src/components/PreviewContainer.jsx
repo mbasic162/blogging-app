@@ -1,7 +1,7 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
 
-export default function ContentContainer({children}) {
+export default function PreviewContainer({children}) {
     return (
         <>
             <CssBaseline/>

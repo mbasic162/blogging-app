@@ -73,7 +73,7 @@ public class UserController {
             authUsername = "";
         }
         Set<Post> posts = postService.findByUsername(username, authUsername);
-        return ResponseEntity.ok(posts.stream().map(post -> postPreviewMapper.toDto(post, commentService.getViewableCommentCountByPost(post, authUsername))).collect(Collectors.toSet()));
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
     }
 
     @GetMapping("/{username}/comments")

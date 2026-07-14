@@ -1,6 +1,7 @@
 package com.example.bloggingapp.service.impl;
 
 import com.example.bloggingapp.config.FileStorageConfig;
+import com.example.bloggingapp.exception.InvalidImageException;
 import com.example.bloggingapp.service.ImageService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,7 +25,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             bytes = image.getBytes();
         } catch (IOException ex) {
-            throw new RuntimeException("Invalid image!");
+            throw new InvalidImageException("Invalid image!");
         }
         for (int i = 0; Files.exists(path); i++) {
             uuid = UUID.randomUUID();

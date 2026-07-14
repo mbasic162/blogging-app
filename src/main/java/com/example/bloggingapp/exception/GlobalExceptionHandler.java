@@ -86,4 +86,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleDisabledException(DisabledException ex) {
         return ResponseEntity.status(403).body(ex.getMessage());
     }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<String> handleInvalidImageException(InvalidImageException ex) {
+        return ResponseEntity.status(400).body(ex.getMessage());
+    }
 }

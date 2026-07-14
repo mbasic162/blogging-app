@@ -93,7 +93,7 @@ public class User {
 
     public String getProfilePicture() {
         if (this.profilePictureName == null) {
-            this.profilePictureName = "default.jpg";
+            return null;
         }
         String profilePicturePath = this.profilePictureName;
         Path path = Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, profilePicturePath);

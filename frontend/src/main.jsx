@@ -5,7 +5,6 @@ import App from './App.jsx'
 import './index.css'
 import NavBar from './components/NavBar.jsx'
 import theme from './theme.jsx'
-
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <ThemeProvider theme={theme}>

@@ -6,10 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(uses = {CommentMapper.class})
+@Mapper(uses = {CommentMapper.class, UserMapper.class})
 public interface PostMapper {
     PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
 
     @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "profilePicture", source = "post.user", qualifiedByName = "mapProfilePicture")
     PostDto toDto(Post post);
 }
