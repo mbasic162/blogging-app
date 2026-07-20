@@ -91,4 +91,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidImageException(InvalidImageException ex) {
         return ResponseEntity.status(400).body(ex.getMessage());
     }
+
+    @ExceptionHandler(FormException.class)
+    public ResponseEntity<FormException> handleFormException(FormException ex) {
+        return ResponseEntity.status(400).body(ex);
+    }
 }

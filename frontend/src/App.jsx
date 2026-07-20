@@ -1,7 +1,8 @@
-import {createBrowserRouter, RouterProvider} from 'react-router-dom'
+import {createBrowserRouter,RouterProvider} from 'react-router-dom'
 import Home from './pages/Home'
 import Post from './pages/Post'
 import Profile from './pages/Profile'
+import Register from './pages/Register'
 import axios from 'axios'
 
 
@@ -24,6 +25,10 @@ export default function App() {
         {
             path: "/:username",
             element: <Profile/>
+        },
+        {
+            path: "/register",
+            element: <Register/>
         }
     ]);
     return (

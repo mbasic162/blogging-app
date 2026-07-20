@@ -2,6 +2,7 @@ package com.example.bloggingapp.service.impl;
 
 import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
+import com.example.bloggingapp.exception.FormException;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.security.JwtUtils;
@@ -25,29 +26,29 @@ public class AuthServiceImpl implements AuthService {
     private final ImageService imageService;
 
     public User register(RegisterRequest registerRequest) {
-        if (userService.existsByUsernameIgnoreCase(registerRequest.username())) {
-            throw new IllegalArgumentException("Username is already in use!");
+        String username = registerRequest.username().trim();
+        String email = registerRequest.email().trim();
+        if (userService.existsByUsernameIgnoreCase(username)) {
+            throw new FormException("username", "Username is already in use");
         }
-        if (userService.existsByEmailIgnoreCase(registerRequest.email())) {
-            throw new IllegalArgumentException("Email is already in use!");
+        if (userService.existsByEmailIgnoreCase(email)) {
+            throw new FormException("email", "Email is already in use");
         }
         String description = registerRequest.description();
         if (description == null) {
             description = "";
         }
         MultipartFile profilePicture = registerRequest.profilePicture();
-        String profilePictureName;
-        if (profilePicture == null) {
-            profilePictureName = "default.jpg";
-        } else {
+        String profilePictureName = null;
+        if (profilePicture != null) {
             if (!imageService.isValid(profilePicture)) {
                 throw new IllegalArgumentException("Profile picture is invalid!");
             }
             profilePictureName = imageService.save(profilePicture);
         }
         return userService.save(new User(
-                registerRequest.username(),
-                registerRequest.email(),
+                username,
+                email,
                 passwordEncoder.encode(registerRequest.password()),
                 description,
                 profilePictureName,
