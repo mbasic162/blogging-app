@@ -16,7 +16,7 @@ export default function Register() {
                             .trim()
                             .min(3, 'Must be 3 characters or more')
                             .max(30, 'Must be 30 characters or less')
-                            .matches('^(?!.*(\"|\\|/|--| )).*$', 'Cannot contain special characters or spaces')
+                            .matches(/^\S*$/, 'Cannot contain spaces')
                             .required('This field is required'),
                         email: Yup.string()
                             .trim()
@@ -64,19 +64,28 @@ export default function Register() {
                             formData.append('profilePicture', values.profilePicture);
                         }
                         formData.append('isPrivate', values.isPrivate);
-                        axios.post('http://localhost:8080/auth/signup', formData, {
+                        axios.post('http://localhost:8080/auth/register', formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }
                         })
                         .then((response => {
+                            localStorage.setItem('token', response.data.token);
+                            localStorage.setItem('user', JSON.stringify({
+                                username: response.data.username,
+                                following: response.data.following,
+                                profilePicture: response.data.profilePicture
+                            }));
                             window.location.href = '/'
                         }))
                         .catch((error) => {
                             if(error.response && error.response.data && error.response.data.field && error.response.data.message) {
-                                setFieldError(error.response.data.field, error.response.data.message)
-                            } else {
-                                console.error('An unexpected error occurred: ', error);
+                                setFieldError(error.response.data.field, error.response.data.message);
+                            } else if(error.response && error.response.data){
+                                setFieldError('password',error.response.data);
+                            }
+                            else{
+                                console.error(error)
                             }
                         })
                     }}

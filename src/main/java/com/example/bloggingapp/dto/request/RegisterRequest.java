@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public record RegisterRequest(
         @NotBlank(message = "Username cannot be blank!")
-        @Pattern(regexp = "^(?!.*(\"|\\|/|--| )).*$", message = "Username cannot contain special characters or spaces!")
+        @Pattern(regexp = "^\\S*$", message = "Username cannot contain spaces!")
         @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters!")
         String username,
         @Email(message = "Invalid email format")

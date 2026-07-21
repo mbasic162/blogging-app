@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import Post from './pages/Post'
 import Profile from './pages/Profile'
 import Register from './pages/Register'
+import Login from './pages/Login'
 import axios from 'axios'
 
 
@@ -29,6 +30,10 @@ export default function App() {
         {
             path: "/register",
             element: <Register/>
+        },
+        {
+            path: "/login",
+            element: <Login/>
         }
     ]);
     return (

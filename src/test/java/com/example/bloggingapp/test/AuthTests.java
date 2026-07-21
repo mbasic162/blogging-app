@@ -57,10 +57,10 @@ public class AuthTests {
 
     @Test
     @Order(1)
-    void signup_WithNewUser_ShouldReturnNewUserDto() throws Exception {
+    void register_WithNewUser_ShouldReturnNewUserDto() throws Exception {
         MultipartFile profilePicture = imageTestService.getImage(Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, "test.png"));
         RegisterRequest registerRequest = new RegisterRequest("new_user", "new@example.com", "newUser", "New User", profilePicture, false);
-        mockMvc.perform(multipart("/auth/signup")
+        mockMvc.perform(multipart("/auth/register")
                         .file(new MockMultipartFile(registerRequest.profilePicture().getName(), registerRequest.profilePicture().getOriginalFilename(), registerRequest.profilePicture().getContentType(), registerRequest.profilePicture().getBytes()))
                         .param("username", registerRequest.username())
                         .param("email", registerRequest.email())

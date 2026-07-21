@@ -270,9 +270,9 @@ public class UserTests {
 
     @Test
     @Order(12)
-    void signup_WithTestUser_ShouldReturnUserDto() throws Exception {
+    void register_WithTestUser_ShouldReturnUserDto() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest("test_user", "test@example.com", "testUser", "Test User", null, true);
-        mockMvc.perform(multipart("/auth/signup")
+        mockMvc.perform(multipart("/auth/register")
                         .file(new MockMultipartFile("Image", (byte[]) null))
                         .param("username", registerRequest.username())
                         .param("email", registerRequest.email())

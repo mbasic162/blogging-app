@@ -9,7 +9,7 @@ import InputBase from '@mui/material/InputBase';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import { Avatar } from '@mui/material';
 
 const Search = styled('div')(({theme}) => ({
     position: 'relative',
@@ -115,7 +115,7 @@ export default function NavBar() {
                         color="inherit"
                         sx={{ml: 1}}
                     >
-                        <AccountCircle/>
+                        <Avatar src={localStorage.getItem('user') === null ? null : JSON.parse(localStorage.getItem('user')).profilePicture} />
                     </IconButton>
                 </Toolbar>
             </AppBar>
