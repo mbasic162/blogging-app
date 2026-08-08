@@ -20,10 +20,6 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
-        return ResponseEntity.status(409).body(ex.getMessage());
-    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
@@ -43,7 +39,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
         if (ex.getMessage().equals("Bad credentials")) {
-            return ResponseEntity.status(401).body("Incorrect username or password!");
+            return ResponseEntity.status(400).body("Incorrect username or password!");
         }
         return ResponseEntity.status(401).body(ex.getMessage());
     }

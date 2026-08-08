@@ -84,16 +84,15 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post getPostForViewByURI(String postURI, String authUsername) {
+    public Post getPostForViewByURI(String postURI, User authUser) {
         Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (authUsername.isEmpty()) {
+        if (authUser == null) {
             if (!isViewable(post)) {
                 throw new PostNotFoundException("Post not found!");
             }
             filterComments(post.getComments());
             return post;
         }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (!isViewableAuth(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }

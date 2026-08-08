@@ -11,6 +11,8 @@ public record PostDto(
         String username,
         String profilePicture,
         Integer rating,
+        Boolean userLiked,
+        Boolean userDisliked,
         LocalDateTime createdAt,
         Set<CommentDto> comments
 ) {

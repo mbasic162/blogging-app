@@ -79,9 +79,9 @@ export default function Register() {
                             window.location.href = '/'
                         }))
                         .catch((error) => {
-                            if(error.response && error.response.data && error.response.data.field && error.response.data.message) {
+                            if(error?.response?.data?.field && error?.response?.data?.message) {
                                 setFieldError(error.response.data.field, error.response.data.message);
-                            } else if(error.response && error.response.data){
+                            } else if(error?.response?.data){
                                 setFieldError('password',error.response.data);
                             }
                             else{

@@ -20,7 +20,7 @@ public interface PostService {
 
     Long getIdByURI(String postURI);
 
-    Post getPostForViewByURI(String postURI, String authUsername);
+    Post getPostForViewByURI(String postURI, User authUser);
 
     boolean existsByURI(String postURI);
 

@@ -68,7 +68,7 @@ public class PostController {
     ) {
         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postService.save(new Post(request.title(), request.content(), user, request.isHidden()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(post));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(post, null));
     }
 
     @PostMapping("/uri")
@@ -85,12 +85,15 @@ public class PostController {
             @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        String authUsername = "";
-        if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+        Post post;
+        User authUser = null;
+        if (authentication == null || !authentication.isAuthenticated()) {
+            post = postService.getPostForViewByURI(postURI, null);
+        } else {
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+            post = postService.getPostForViewByURI(postURI, authUser);
         }
-        Post post = postService.getPostForViewByURI(postURI, authUsername);
-        return ResponseEntity.ok(postMapper.toDto(post));
+        return ResponseEntity.ok(postMapper.toDto(post, authUser));
     }
 
     @GetMapping("{post_uri}/comments")
