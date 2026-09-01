@@ -1,5 +1,5 @@
 import {Card, Divider, Typography, Toolbar, IconButton, Box} from "@mui/material";
-import {encode} from '/../utils/UriSanitiser.jsx'
+import {encode} from '/src/utils/UriSanitiser.jsx'
 import PreviewHeader from "./PreviewHeader.jsx";
 import PreviewBody from "./PreviewBody.jsx";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
