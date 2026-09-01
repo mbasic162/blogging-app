@@ -2,9 +2,12 @@ package com.example.bloggingapp.controller;
 
 import com.example.bloggingapp.dto.CommentDto;
 import com.example.bloggingapp.dto.request.CreateCommentRequest;
+import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.mapper.CommentMapper;
 import com.example.bloggingapp.model.Comment;
+import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.service.CommentService;
+import com.example.bloggingapp.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +29,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService commentService;
-    private final CommentMapper commentMapper = CommentMapper.INSTANCE;
+    private final CommentMapper commentMapper;
+    private final UserService userService;
 
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
@@ -34,8 +38,9 @@ public class CommentController {
             @RequestBody @Valid CreateCommentRequest request,
             Authentication authentication
     ) {
-        Comment comment = commentService.create(request, authentication.getName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toDto(comment));
+        User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        Comment comment = commentService.create(request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toDto(comment, user));
     }
 
     @PostMapping("/uri")
@@ -50,12 +55,12 @@ public class CommentController {
             @PathVariable(name = "comment_uri")
             @NotBlank(message = "Comment URI cannot be blank!") String commentURI,
             Authentication authentication) {
-        String authUsername = "";
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Comment comment = commentService.getCommentForViewByURI(commentURI, authUsername);
-        return ResponseEntity.ok(commentMapper.toDto(comment));
+        Comment comment = commentService.getCommentForViewByURI(commentURI, authUser);
+        return ResponseEntity.ok(commentMapper.toDto(comment, authUser));
     }
 
     @GetMapping("/{comment_uri}/comments")
@@ -64,12 +69,14 @@ public class CommentController {
             @NotBlank(message = "Comment URI cannot be blank!") String commentURI,
             Authentication authentication
     ) {
-        String authUsername = "";
+        User authUser;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        } else {
+            authUser = null;
         }
-        Set<Comment> comments = commentService.findByParentComment(commentURI, authUsername);
-        return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
+        Set<Comment> comments = commentService.findByParentComment(commentURI, authUser);
+        return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 
     @PostMapping("/like")

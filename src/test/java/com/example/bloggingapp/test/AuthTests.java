@@ -126,6 +126,6 @@ public class AuthTests {
         LoginRequest disabledUserLoginRequest = new LoginRequest("first_user", "first user");
         mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectWriter.writeValueAsString(disabledUserLoginRequest)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 }

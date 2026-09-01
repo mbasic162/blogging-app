@@ -2,19 +2,18 @@ package com.example.bloggingapp.service.impl;
 
 import com.example.bloggingapp.exception.PostNotFoundException;
 import com.example.bloggingapp.exception.UserNotFoundException;
-import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.repository.PostRepository;
 import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
+import com.example.bloggingapp.service.helper.ViewHelper;
 import com.example.bloggingapp.utils.UriSanitizer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,6 +22,7 @@ import java.util.Set;
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserService userService;
+    private final ViewHelper viewHelper;
 
     @Override
     public Optional<Post> findById(Long id) {
@@ -30,21 +30,20 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findByUsername(String username, String authUsername) {
+    public Set<Post> findByUsername(String username, User authUser) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Set<Post> posts = postRepository.findByUser(user);
-        if (authUsername.isEmpty()) {
-            if (!userService.isViewable(user)) {
+        if (authUser == null) {
+            if (!viewHelper.isUserViewable(user)) {
                 throw new UserNotFoundException("User not found!");
             }
-            posts.removeIf(post -> !isViewable(post));
+            posts.removeIf(post -> !viewHelper.isPostViewable(post));
             return posts;
         }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        if (!userService.isViewableAuth(user, authUser)) {
+        if (!viewHelper.isUserViewable(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
-        posts.removeIf(post -> !isViewableAuth(post, authUser));
+        posts.removeIf(post -> !viewHelper.isPostViewable(post, authUser));
         return posts;
     }
 
@@ -54,13 +53,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findN(Integer numberOfPosts, String authUsername) {
+    public Set<Post> findN(Integer numberOfPosts, User authUser) {
         Set<Post> posts;
-        if (authUsername.isEmpty()) {
+        if (authUser == null) {
             posts = postRepository.findN(Limit.of(numberOfPosts));
             return posts;
         }
-        User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         posts = postRepository.findNAuth(Limit.of(numberOfPosts), authUser);
         return posts;
     }
@@ -87,16 +85,16 @@ public class PostServiceImpl implements PostService {
     public Post getPostForViewByURI(String postURI, User authUser) {
         Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         if (authUser == null) {
-            if (!isViewable(post)) {
+            if (!viewHelper.isPostViewable(post)) {
                 throw new PostNotFoundException("Post not found!");
             }
-            filterComments(post.getComments());
+            viewHelper.filterPostContent(post);
             return post;
         }
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
-        filterCommentsAuth(post.getComments(), authUser);
+        viewHelper.filterPostContent(post, authUser);
         return post;
     }
 
@@ -112,7 +110,7 @@ public class PostServiceImpl implements PostService {
     public void like(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (post.getLikedBy().contains(authUser)) {
@@ -131,7 +129,7 @@ public class PostServiceImpl implements PostService {
     public void removeLike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getLikedBy().contains(authUser)) {
@@ -146,7 +144,7 @@ public class PostServiceImpl implements PostService {
     public void dislike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (post.getDislikedBy().contains(authUser)) {
@@ -166,7 +164,7 @@ public class PostServiceImpl implements PostService {
     public void removeDislike(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Invalid post!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getDislikedBy().contains(authUser)) {
@@ -180,7 +178,7 @@ public class PostServiceImpl implements PostService {
     public void changeTitle(String authUsername, Long postId, String newTitle) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!authUser.equals(post.getUser())) {
@@ -199,7 +197,7 @@ public class PostServiceImpl implements PostService {
     public void changeContent(String authUsername, Long postId, String newContent) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!authUser.equals(post.getUser())) {
@@ -218,7 +216,7 @@ public class PostServiceImpl implements PostService {
     public void tempDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -234,7 +232,7 @@ public class PostServiceImpl implements PostService {
     public void undelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getDeleted()) {
@@ -247,7 +245,7 @@ public class PostServiceImpl implements PostService {
     public void permanentlyDelete(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -260,7 +258,7 @@ public class PostServiceImpl implements PostService {
     public void hide(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post not found!"));
-        if (!isViewableAuth(post, authUser)) {
+        if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
         if (!post.getUser().equals(authUser)) {
@@ -301,46 +299,5 @@ public class PostServiceImpl implements PostService {
             throw new IllegalStateException("This post is not deleted by an admin!");
         }
         postRepository.undeleteByAdmin(post);
-    }
-
-    @Override
-    public void filterComments(Set<Comment> comments) {
-        for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
-            Comment comment = i.next();
-            User user = comment.getUser();
-            if (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled()) {
-                i.remove();
-            } else {
-                filterComments(comment.getComments());
-            }
-        }
-    }
-
-    @Override
-    public void filterCommentsAuth(Set<Comment> comments, User authUser) {
-        for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
-            Comment comment = i.next();
-            User user = comment.getUser();
-            if (!user.equals(authUser) && (comment.getDeleted() || comment.getHidden() || user.getPrivate() || comment.getDeletedByAdmin() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user))) {
-                i.remove();
-            } else {
-                filterCommentsAuth(comment.getComments(), authUser);
-            }
-        }
-    }
-
-    @Override
-    public boolean isViewable(Post post) {
-        User user = post.getUser();
-        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewable(user);
-    }
-
-    @Override
-    public boolean isViewableAuth(Post post, User authUser) {
-        User user = post.getUser();
-        if (authUser.equals(user)) {
-            return true;
-        }
-        return !post.getHidden() && !post.getDeleted() && !post.getDeletedByAdmin() && userService.isViewableAuth(user, authUser);
     }
 }

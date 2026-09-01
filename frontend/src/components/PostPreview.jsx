@@ -1,5 +1,5 @@
 import {Card, Divider} from "@mui/material";
-import {encode} from '/src/utils/UriSanitiser.jsx'
+import {encode} from '/../utils/UriSanitiser.jsx'
 import PreviewHeader from "./PreviewHeader.jsx";
 import PreviewBody from "./PreviewBody.jsx";
 import PreviewFooter from "./PreviewFooter.jsx";
@@ -17,11 +17,11 @@ export default function PostPreview({id, title, rating, date, username, profileP
     }
     function openFullView() {
         let selection = window.getSelection();
-        if(selection && selection.type != 'Range') {
+        if(selection && selection.type !== 'Range') {
             window.location.href = "/post/" + postURI()
         }
     }
-    var formattedDate = new Date(date).toLocaleDateString();
+    const formattedDate = new Date(date).toLocaleDateString();
     return (
         <Card sx={{marginTop: "5%", marginBottom: "5%", boxShadow: "2px 2px 1px #a7a7a7"}}>
             <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate}/>

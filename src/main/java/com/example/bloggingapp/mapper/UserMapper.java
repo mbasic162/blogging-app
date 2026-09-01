@@ -1,33 +1,15 @@
 package com.example.bloggingapp.mapper;
 
 import com.example.bloggingapp.dto.UserDto;
+import com.example.bloggingapp.mapper.helper.UserMapperHelper;
 import com.example.bloggingapp.model.User;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.factory.Mappers;
 
-@Mapper(uses = {UserFollowMapper.class})
+@Mapper(componentModel = "spring", uses = {UserFollowMapper.class, PostPreviewMapper.class, CommentPreviewMapper.class, UserMapperHelper.class})
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
-    @Mapping(target = "isAuthUserBlocked", constant = "false")
     @Mapping(target = "isUserBlocked", constant = "false")
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
-    UserDto toDto(User user);
-
-    @Named("mapProfilePicture")
-    default String mapProfilePicture(User user) {
-        String profilePictureName = user.getProfilePictureName();
-        if (profilePictureName == null) {
-            return null;
-        }
-        if (profilePictureName.endsWith(".jpg")) {
-            return "data:image/jpg;base64," + user.getProfilePicture();
-        }
-        if (profilePictureName.endsWith(".png")) {
-            return "data:image/png;base64," + user.getProfilePicture();
-        }
-        return "data:image/jpeg;base64," + user.getProfilePicture();
-    }
+    UserDto toDto(User user, @Context User authUser);
 }

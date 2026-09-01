@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class Post {
     @ManyToOne
     private User user;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "parentPost")
-    private Set<Comment> comments;
+    private Set<Comment> comments = new HashSet<>();
     private final LocalDateTime createdAt = LocalDateTime.now();
     @Accessors(prefix = "is")
     private Boolean isDeleted = false;
@@ -45,14 +46,14 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> likedBy;
+    private Set<User> likedBy = new HashSet<>();
     @ManyToMany
     @JoinTable(
             name = "post_dislikes",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> dislikedBy;
+    private Set<User> dislikedBy = new HashSet<>();
 
     public Post(String title, String content, User user, Boolean isHidden) {
         this.title = title;

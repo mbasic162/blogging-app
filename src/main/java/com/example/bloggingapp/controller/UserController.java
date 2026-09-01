@@ -38,13 +38,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper = UserMapper.INSTANCE;
-    private final UserFollowMapper userFollowMapper = UserFollowMapper.INSTANCE;
+    private final UserMapper userMapper;
+    private final UserFollowMapper userFollowMapper;
     private final PostService postService;
     private final CommentService commentService;
-    private final CommentMapper commentMapper = CommentMapper.INSTANCE;
-    private final PostPreviewMapper postPreviewMapper = PostPreviewMapper.INSTANCE;
-
+    private final PostPreviewMapper postPreviewMapper;
+    private final CommentMapper commentMapper;
 
     @GetMapping("/{username}")
     public ResponseEntity<UserDto> getUser(
@@ -52,12 +51,12 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        String authUsername = "";
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        User user = userService.getUserForViewByUsername(username, authUsername);
-        return ResponseEntity.ok(userMapper.toDto(user));
+        User user = userService.getUserForViewByUsername(username, authUser);
+        return ResponseEntity.ok(userMapper.toDto(user, authUser));
     }
 
     @GetMapping("/{username}/posts")
@@ -66,13 +65,11 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        String authUsername;
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
-        } else {
-            authUsername = "";
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Set<Post> posts = postService.findByUsername(username, authUsername);
+        Set<Post> posts = postService.findByUsername(username, authUser);
         return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
     }
 
@@ -83,12 +80,14 @@ public class UserController {
             Authentication authentication
     ) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        String authUsername = "";
+        User authUser;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        } else {
+            authUser = null;
         }
-        Set<Comment> comments = commentService.findByUser(user, authUsername);
-        return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
+        Set<Comment> comments = commentService.findByUser(user, authUser);
+        return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 
     @GetMapping("{username}/followers")
@@ -97,11 +96,11 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        String authUsername = "";
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Set<User> followers = userService.findFollowers(username, authUsername);
+        Set<User> followers = userService.findFollowers(username, authUser);
         return ResponseEntity.ok(followers.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
@@ -111,11 +110,11 @@ public class UserController {
             @NotBlank(message = "Username cannot be blank!") String username,
             Authentication authentication
     ) {
-        String authUsername = "";
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Set<User> following = userService.findFollowing(username, authUsername);
+        Set<User> following = userService.findFollowing(username, authUser);
         return ResponseEntity.ok(following.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 

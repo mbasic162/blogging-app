@@ -1,9 +1,8 @@
 package com.example.bloggingapp.dto;
 
 import java.time.LocalDate;
-import java.util.Set;
 
-public record CommentDto(
+public record CommentPreviewDto(
         Long id,
         String content,
         String username,
@@ -11,7 +10,6 @@ public record CommentDto(
         String profilePicture,
         Boolean userLiked,
         Boolean userDisliked,
-        LocalDate date,
-        Set<CommentDto> comments
+        LocalDate date
 ) {
 }

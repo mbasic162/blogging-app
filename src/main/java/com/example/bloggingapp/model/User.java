@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,10 +60,10 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "parent_id")
     )
-    private Set<User> followers;
+    private Set<User> followers = new HashSet<>();
 
     @ManyToMany(mappedBy = "followers")
-    private Set<User> following;
+    private Set<User> following = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -70,25 +71,25 @@ public class User {
             joinColumns = @JoinColumn(name = "parent_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> blockedUsers;
+    private Set<User> blockedUsers = new HashSet<>();
 
     @OneToMany(orphanRemoval = true, mappedBy = "user")
-    private Set<Post> posts;
+    private Set<Post> posts = new HashSet<>();
 
     @OneToMany(orphanRemoval = true, mappedBy = "user")
-    private Set<Comment> comments;
+    private Set<Comment> comments = new HashSet<>();
 
     @ManyToMany(mappedBy = "likedBy")
-    private Set<Post> likedPosts;
+    private Set<Post> likedPosts = new HashSet<>();
 
     @ManyToMany(mappedBy = "dislikedBy")
-    private Set<Post> dislikedPosts;
+    private Set<Post> dislikedPosts = new HashSet<>();
 
     @ManyToMany(mappedBy = "likedBy")
-    private Set<Comment> likedComments;
+    private Set<Comment> likedComments = new HashSet<>();
 
     @ManyToMany(mappedBy = "dislikedBy")
-    private Set<Comment> dislikedComments;
+    private Set<Comment> dislikedComments = new HashSet<>();
 
 
     public String getProfilePicture() {

@@ -11,6 +11,9 @@ async function postLoader({params}) {
     return (await axios.get(`http://localhost:8080/post/${params.postURI}`)).data
 }
 
+async function profileLoader({params}) {
+    return (await axios.get(`http://localhost:8080/user/${params.username}`)).data
+}
 
 export default function App() {
     const router = createBrowserRouter([
@@ -25,7 +28,8 @@ export default function App() {
         },
         {
             path: "/:username",
-            element: <Profile/>
+            element: <Profile/>,
+            loader: profileLoader
         },
         {
             path: "/register",

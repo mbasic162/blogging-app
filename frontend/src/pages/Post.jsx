@@ -1,5 +1,5 @@
 import {useParams, useLoaderData} from "react-router-dom"
-import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Alert} from "@mui/material"
+import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Alert, Slide} from "@mui/material"
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
@@ -7,6 +7,8 @@ import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ShareIcon from '@mui/icons-material/Share';
 import axios from "axios";
 import {useState} from "react";
+import PreviewContainer from "/src/components/PreviewContainer";
+import Comment from "/src/components/Comment";
 
 export default function Post() {
     const post = useLoaderData();
@@ -27,10 +29,11 @@ export default function Post() {
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
             handleUnauthenticatedError();
+            return;
         }
         if(userLiked) {
                 axios.post('http://localhost:8080/post/removeLike', {postURI: postURI})
-                .then((response) => {
+                .then(() => {
                     setUserLiked(false);
                     setRating(rating - 1);
                 })
@@ -42,7 +45,7 @@ export default function Post() {
         }
         else {
             axios.post('http://localhost:8080/post/like', {postURI: postURI})
-                .then((response) => {
+                .then(() => {
                     setUserLiked(true);
                     setRating(rating + 1);
                     if(userDisliked) {
@@ -60,6 +63,7 @@ export default function Post() {
     function handleDislikeClick() {
         if(!localStorage.getItem('token')) {
             handleUnauthenticatedError();
+            return;
         }
         if(userDisliked) {
             axios.post('http://localhost:8080/post/removeDislike', {postURI: postURI})
@@ -146,10 +150,21 @@ export default function Post() {
                         <ShareIcon fontSize="large"/>
                     </IconButton>
                 </Toolbar>
+                <Divider sx={{borderBottomWidth: 2}}/>
+                <Typography marginTop="2%" variant="h4" textAlign="left">
+                    Comments:
+                </Typography>
+                <PreviewContainer>
+                    {post.comments.map((comment) => (
+                        <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} handleUnauthenticatedError={handleUnauthenticatedError}/>
+                    ))}
+                </PreviewContainer>
             </Container>
-            <Alert severity="warning"  sx={{display: unauthenticatedErrorShown ? 'flex' : 'none', position: 'fixed', bottom: '10px', left: '10%', width: '80%', borderRadius: '10px', fontSize: '1.5rem' , justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8c379', color: '#693d00'}}>
-                Please <a href="/login">log in</a> or <a href="/register">create an account</a>
-            </Alert>
+            <Slide direction="up" in={unauthenticatedErrorShown} timeout={200} mountOnEnter unmountOnExit>
+                <Alert severity="warning"  sx={{position: 'fixed', bottom: '10px', left: '10%', width: '80%', borderRadius: '10px', fontSize: '1.5rem' , justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8c379', color: '#693d00'}}>
+                    Please <a href="/login">log in</a> or <a href="/register">create an account</a>
+                </Alert>
+            </Slide>
         </>
     )
 }

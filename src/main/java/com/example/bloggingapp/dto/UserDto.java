@@ -8,7 +8,8 @@ public record UserDto(
         String description,
         Set<UserFollowDto> followers,
         Set<UserFollowDto> following,
-        boolean isUserBlocked,
-        boolean isAuthUserBlocked
+        Set<PostPreviewDto> posts,
+        Set<CommentPreviewDto> comments,
+        boolean isUserBlocked
 ) {
 }

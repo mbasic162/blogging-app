@@ -12,7 +12,7 @@ public interface UserService {
 
     Optional<User> findByUsername(String username);
 
-    User getUserForViewByUsername(String username, String authUsername);
+    User getUserForViewByUsername(String username, User authUser);
 
     User save(User user);
 
@@ -22,9 +22,9 @@ public interface UserService {
 
     boolean existsByEmailIgnoreCase(String email);
 
-    Set<User> findFollowers(String username, String authUsername);
+    Set<User> findFollowers(String username, User authUser);
 
-    Set<User> findFollowing(String username, String authUsername);
+    Set<User> findFollowing(String username, User authUser);
 
     void follow(String username, String authUsername);
 
@@ -57,8 +57,4 @@ public interface UserService {
     void disable(String username);
 
     void enable(String username);
-
-    boolean isViewable(User user);
-
-    boolean isViewableAuth(User user, User authUser);
 }

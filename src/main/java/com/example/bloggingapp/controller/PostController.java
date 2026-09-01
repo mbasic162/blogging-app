@@ -26,7 +26,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,26 +37,21 @@ public class PostController {
     private final PostService postService;
     private final UserService userService;
     private final CommentService commentService;
-    private final CommentMapper commentMapper = CommentMapper.INSTANCE;
-    private final PostMapper postMapper = PostMapper.INSTANCE;
-    private final PostPreviewMapper postPreviewMapper = PostPreviewMapper.INSTANCE;
-
+    private final PostMapper postMapper;
+    private final PostPreviewMapper postPreviewMapper;
+    private final CommentMapper commentMapper;
 
     @GetMapping("/")
     public ResponseEntity<Set<PostPreviewDto>> getNPosts(
             Authentication authentication
     ) {
-        String authUsername = "";
+        User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
         Integer numberOfPosts = 10;
-        Set<Post> posts = postService.findN(numberOfPosts, authUsername);
-        Set<PostPreviewDto> postPreviewDtos = new HashSet<>();
-        for (Post post : posts) {
-            postPreviewDtos.add(postPreviewMapper.toDto(post));
-        }
-        return ResponseEntity.ok(postPreviewDtos);
+        Set<Post> posts = postService.findN(numberOfPosts, authUser);
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
     }
 
     @PostMapping("/create")
@@ -68,7 +62,7 @@ public class PostController {
     ) {
         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Post post = postService.save(new Post(request.title(), request.content(), user, request.isHidden()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(post, null));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(post, post.getUser()));
     }
 
     @PostMapping("/uri")
@@ -85,14 +79,11 @@ public class PostController {
             @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Post post;
         User authUser = null;
-        if (authentication == null || !authentication.isAuthenticated()) {
-            post = postService.getPostForViewByURI(postURI, null);
-        } else {
+        if (authentication != null && authentication.isAuthenticated()) {
             authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
-            post = postService.getPostForViewByURI(postURI, authUser);
         }
+        Post post = postService.getPostForViewByURI(postURI, authUser);
         return ResponseEntity.ok(postMapper.toDto(post, authUser));
     }
 
@@ -102,13 +93,14 @@ public class PostController {
             @NotBlank(message = "Post URI cannot be blank!") String postURI,
             Authentication authentication
     ) {
-        Set<Comment> comments;
-        String authUsername = "";
+        User authUser;
         if (authentication != null && authentication.isAuthenticated()) {
-            authUsername = authentication.getName();
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        } else {
+            authUser = null;
         }
-        comments = commentService.findByParentPost(postURI, authUsername);
-        return ResponseEntity.ok(comments.stream().map(commentMapper::toDto).collect(Collectors.toSet()));
+        Set<Comment> comments = commentService.findByParentPost(postURI, authUser);
+        return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 
     @PostMapping("/like")

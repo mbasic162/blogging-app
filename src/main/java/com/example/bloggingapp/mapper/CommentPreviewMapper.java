@@ -1,6 +1,6 @@
 package com.example.bloggingapp.mapper;
 
-import com.example.bloggingapp.dto.CommentDto;
+import com.example.bloggingapp.dto.CommentPreviewDto;
 import com.example.bloggingapp.mapper.helper.CommentMapperHelper;
 import com.example.bloggingapp.mapper.helper.GeneralMapperHelper;
 import com.example.bloggingapp.mapper.helper.UserMapperHelper;
@@ -10,12 +10,12 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {GeneralMapperHelper.class, CommentMapperHelper.class, UserMapperHelper.class})
-public interface CommentMapper {
+@Mapper(componentModel = "spring", uses = {UserMapperHelper.class, GeneralMapperHelper.class, CommentMapperHelper.class})
+public interface CommentPreviewMapper {
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
     @Mapping(target = "date", source = "createdAt", qualifiedByName = "localDateTimeToLocalDate")
     @Mapping(target = "userLiked", source = "comment", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "comment", qualifiedByName = "userDisliked")
-    CommentDto toDto(Comment comment, @Context User authUser);
+    CommentPreviewDto toDto(Comment comment, @Context User authUser);
 }

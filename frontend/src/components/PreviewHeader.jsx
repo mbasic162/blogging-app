@@ -18,13 +18,13 @@ export default function PreviewHeader({username, profilePicture, date}) {
                             {username}
                         </Typography>
                     </Box>
-                    <Typography variant="h6" align="left">
+                    <Typography variant="h6" align="left" minWidth="fit-content">
                         {date}
                     </Typography>
                     <IconButton
                         size="large"
                         edge="end"
-                        aria-label="post menu"
+                        aria-label="menu"
                     >
                         <MoreIcon fontSize="large"/>
                     </IconButton>

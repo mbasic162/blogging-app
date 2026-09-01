@@ -1,6 +1,5 @@
 package com.example.bloggingapp.service;
 
-import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 
@@ -8,13 +7,13 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface PostService {
-    Set<Post> findByUsername(String username, String authUsername);
+    Set<Post> findByUsername(String username, User authUser);
 
     Optional<Post> findById(Long id);
 
     Post save(Post post);
 
-    Set<Post> findN(Integer numberOfPosts, String authUsername);
+    Set<Post> findN(Integer numberOfPosts, User authUser);
 
     String getURIByIdAndTitle(Long postId, String title);
 
@@ -49,12 +48,4 @@ public interface PostService {
     void tempDeleteByAdmin(Long postId);
 
     void undeleteByAdmin(Long postId);
-
-    void filterComments(Set<Comment> comments);
-
-    void filterCommentsAuth(Set<Comment> comments, User authUser);
-
-    boolean isViewable(Post post);
-
-    boolean isViewableAuth(Post post, User authUser);
 }

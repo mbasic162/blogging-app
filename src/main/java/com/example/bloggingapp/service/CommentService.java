@@ -11,21 +11,17 @@ import java.util.Set;
 public interface CommentService {
     Comment save(Comment comment);
 
-    Comment create(CreateCommentRequest request, String authUsername);
+    Comment create(CreateCommentRequest request, User authUser);
 
-    Set<Comment> findByUser(User user, String authUsername);
+    Set<Comment> findByUser(User user, User authUser);
 
-    Set<Comment> findByParentPost(String postURI, String authUsername);
+    Set<Comment> findByParentPost(String postURI, User authUser);
 
-    Set<Comment> findByParentComment(String commentURI, String authUsername);
+    Set<Comment> findByParentComment(String commentURI, User authUser);
 
-    Comment getCommentForViewByURI(String commentURI, String authUsername);
+    Comment getCommentForViewByURI(String commentURI, User authUser);
 
     boolean existsByURI(String commentURI);
-
-    void filterCommentsAuth(Set<Comment> comments, User authUser);
-
-    void filterComments(Set<Comment> comments);
 
     Optional<Comment> findById(Long commentId);
 
@@ -33,7 +29,7 @@ public interface CommentService {
 
     Long getIdByURI(String url);
 
-    Integer getViewableCommentCountByPost(Post post, String authUsername);
+    Integer getViewableCommentCountByPost(Post post, User authUser);
 
     void like(Long commentId, String authUsername);
 
@@ -58,8 +54,4 @@ public interface CommentService {
     void tempDeleteByAdmin(Long commentId);
 
     void undeleteByAdmin(Long commentId);
-
-    boolean isViewable(Comment comment);
-
-    boolean isViewableAuth(Comment comment, User authUser);
 }
