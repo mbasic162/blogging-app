@@ -64,7 +64,7 @@ export default function Register() {
                             formData.append('profilePicture', values.profilePicture);
                         }
                         formData.append('isPrivate', values.isPrivate);
-                        axios.post('http://localhost:8080/auth/register', formData, {
+                        axios.post('/auth/register', formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }

@@ -1,7 +1,7 @@
 import {Card, Divider, Typography, Toolbar, IconButton, Box} from "@mui/material";
 import {encode} from '/src/utils/UriSanitiser.jsx'
-import PreviewHeader from "./PreviewHeader.jsx";
-import PreviewBody from "./PreviewBody.jsx";
+import PreviewHeader from "/src/components/preview/PreviewHeader.jsx";
+import PreviewBody from "/src/components/preview/PreviewBody.jsx";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
@@ -10,7 +10,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import { useState } from "react";
 import axios from "axios";
 
-export default function Comment({id, content, ratingConst, date, username, profilePicture, userLikedConst, userDislikedConst, handleUnauthenticatedError}) {
+export default function Comment({id, content, ratingConst, date, username, profilePicture, userLikedConst, userDislikedConst}) {
     const formattedDate = new Date(date).toLocaleDateString();
     const [userLiked, setUserLiked] = useState(userLikedConst);
     const [userDisliked, setUserDisliked] = useState(userDislikedConst);
@@ -28,23 +28,18 @@ export default function Comment({id, content, ratingConst, date, username, profi
     }
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
-            handleUnauthenticatedError();
+            window.dispatchEvent(new Event('unauthenticatedAlert'));
             return;
         }
         if(userLiked) {
-                axios.post('http://localhost:8080/comment/removeLike', {commentURI: commentURI()})
+                axios.post('/comment/removeLike', {commentURI: commentURI()})
                 .then(() => {
                     setUserLiked(false);
                     setRating(rating - 1);
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
         else {
-            axios.post('http://localhost:8080/comment/like', {commentURI: commentURI()})
+            axios.post('/comment/like', {commentURI: commentURI()})
                 .then(() =>{
                     setUserLiked(true);
                     setRating(rating + 1);
@@ -53,35 +48,25 @@ export default function Comment({id, content, ratingConst, date, username, profi
                         setRating(rating + 2);
                     }
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
     }
 
     function handleDislikeClick() {
         if(!localStorage.getItem('token')) {
-            handleUnauthenticatedError();
+            window.dispatchEvent(new Event('unauthenticatedAlert'));
             return;
         }
         if(userDisliked) {
-            axios.post('http://localhost:8080/comment/removeDislike', {commentURI: commentURI()})
+            axios.post('/comment/removeDislike', {commentURI: commentURI()})
                 .then((response) => {
                     if(response?.status!==200) {
                     }
                     setUserDisliked(false);
                     setRating(rating + 1);
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
         else {
-            axios.post('http://localhost:8080/comment/dislike', {commentURI: commentURI()})
+            axios.post('/comment/dislike', {commentURI: commentURI()})
                 .then((response) => {
                     if(response?.status!==200) {
                         return;
@@ -91,11 +76,6 @@ export default function Comment({id, content, ratingConst, date, username, profi
                     if(userLiked) {
                         setUserLiked(false);
                         setRating(rating - 2);
-                    }
-                })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
                     }
                 })
         }   

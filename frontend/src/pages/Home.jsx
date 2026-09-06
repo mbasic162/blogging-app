@@ -7,7 +7,7 @@ import axios from "axios";
 export default function Home() {
     const [posts, setPosts] = useState([]);
     useEffect(() => {
-        axios.get('http://localhost:8080/post/')
+        axios.get('/post')
             .then(response => {
                 setPosts(response.data);
             }

@@ -1,5 +1,5 @@
 import {useParams, useLoaderData} from "react-router-dom"
-import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Alert, Slide} from "@mui/material"
+import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton} from "@mui/material"
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
@@ -16,35 +16,21 @@ export default function Post() {
     const [userLiked, setUserLiked] = useState(post.userLiked);
     const [userDisliked, setUserDisliked] = useState(post.userDisliked);
     const [rating, setRating] = useState(post.rating);
-    const [unauthenticatedErrorShown, setUnauthenticatedErrorShown] = useState(false);
-
-
-    function handleUnauthenticatedError(){
-        setUnauthenticatedErrorShown(true);
-        setTimeout(() => {
-            setUnauthenticatedErrorShown(false);
-        }, 5000);
-    }
 
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
-            handleUnauthenticatedError();
+            window.dispatchEvent(new Event('unauthenticatedAlert'));
             return;
         }
         if(userLiked) {
-                axios.post('http://localhost:8080/post/removeLike', {postURI: postURI})
+                axios.post('/post/removeLike', {postURI: postURI})
                 .then(() => {
                     setUserLiked(false);
                     setRating(rating - 1);
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
         else {
-            axios.post('http://localhost:8080/post/like', {postURI: postURI})
+            axios.post('/post/like', {postURI: postURI})
                 .then(() => {
                     setUserLiked(true);
                     setRating(rating + 1);
@@ -53,20 +39,15 @@ export default function Post() {
                         setRating(rating + 2);
                     }
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
     }
     function handleDislikeClick() {
         if(!localStorage.getItem('token')) {
-            handleUnauthenticatedError();
+            window.dispatchEvent(new Event('unauthenticatedAlert'));
             return;
         }
         if(userDisliked) {
-            axios.post('http://localhost:8080/post/removeDislike', {postURI: postURI})
+            axios.post('/post/removeDislike', {postURI: postURI})
                 .then((response) => {
                     if(response?.status!==200) {
                         return;
@@ -74,14 +55,9 @@ export default function Post() {
                     setUserDisliked(false);
                     setRating(rating + 1);
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }
         else {
-            axios.post('http://localhost:8080/post/dislike', {postURI: postURI})
+            axios.post('/post/dislike', {postURI: postURI})
                 .then((response) => {
                     if(response?.status!==200) {
                         return;
@@ -93,12 +69,11 @@ export default function Post() {
                         setRating(rating - 2);
                     }
                 })
-                .catch((error) => {
-                    if(error?.response?.status===401){
-                        handleUnauthenticatedError();
-                    }
-                })
         }   
+    }
+
+    function openProfile() {
+        window.location.href = `/${post.username}`;
     }
 
     return (
@@ -110,8 +85,8 @@ export default function Post() {
                 </Typography>
                 <Divider sx={{borderBottomWidth: 2}}/>
                 <Toolbar>
-                    <Avatar alt={post.username} src={post.profilePicture}/>
-                    <Typography marginLeft="1.5%" variant="h5">
+                    <Avatar alt={post.username} src={post.profilePicture} onClick={openProfile} sx={{cursor: "pointer"}}/>
+                    <Typography marginLeft="1.5%" variant="h5" onClick={openProfile} sx={{cursor: "pointer"}}>
                         {post.username}
                     </Typography>
                     <Box flexGrow="1"/>
@@ -156,15 +131,10 @@ export default function Post() {
                 </Typography>
                 <PreviewContainer>
                     {post.comments.map((comment) => (
-                        <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} handleUnauthenticatedError={handleUnauthenticatedError}/>
+                        <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked}/>
                     ))}
                 </PreviewContainer>
             </Container>
-            <Slide direction="up" in={unauthenticatedErrorShown} timeout={200} mountOnEnter unmountOnExit>
-                <Alert severity="warning"  sx={{position: 'fixed', bottom: '10px', left: '10%', width: '80%', borderRadius: '10px', fontSize: '1.5rem' , justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8c379', color: '#693d00'}}>
-                    Please <a href="/login">log in</a> or <a href="/register">create an account</a>
-                </Alert>
-            </Slide>
         </>
     )
 }

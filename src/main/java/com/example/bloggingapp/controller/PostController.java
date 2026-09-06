@@ -41,7 +41,7 @@ public class PostController {
     private final PostPreviewMapper postPreviewMapper;
     private final CommentMapper commentMapper;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<Set<PostPreviewDto>> getNPosts(
             Authentication authentication
     ) {

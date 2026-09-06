@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {useLoaderData} from "react-router-dom";
-import {Avatar, Container, Typography, Box, Grid, CssBaseline, Tab, Divider, Alert, Slide} from "@mui/material"
+import {Avatar, Container, Typography, Box, Grid, CssBaseline, Tab, Divider} from "@mui/material"
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import PreviewContainer from "/src/components/PreviewContainer"
 import PostPreview from "/src/components/PostPreview"
@@ -18,14 +18,6 @@ export default function Profile() {
     const following = user.following;
     const numberOfFollowers = followers ? followers.length : 0;
     const numberOfFollowing = following ? following.length : 0;
-    const [unauthenticatedErrorShown, setUnauthenticatedErrorShown] = useState(false);
-
-    function handleUnauthenticatedError(){
-        setUnauthenticatedErrorShown(true);
-        setTimeout(() => {
-            setUnauthenticatedErrorShown(false);
-        }, 5000);
-    }
 
 
     const handleTabPanelChange = (event, newValue) => {
@@ -67,7 +59,9 @@ export default function Profile() {
                         </Typography>
                     </Grid>
                 </Grid>
-                <Box flexBasis="100%" paddingBottom="10%"/>
+                <Box flexBasis="100%" pt="5%" pb="5%" display="flex" alignItems="center" justifyContent="center" flexDirection="column">
+                    {description ? <Typography variant="h5"> {description} </Typography> : null}
+                </Box>
                 <Box width="100%">
                     <TabContext value={tabContextValue}>
                         <TabList onChange={handleTabPanelChange} aria-label="Post or comment selector" centered>
@@ -85,18 +79,13 @@ export default function Profile() {
                         <TabPanel value="Comments">
                             <PreviewContainer>
                                 {comments.map((comment) => (
-                                    <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} handleUnauthenticatedError={handleUnauthenticatedError}/>
+                                    <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked}/>
                                 ))}
                             </PreviewContainer>
                         </TabPanel>
                     </TabContext>
                 </Box>
             </Container>
-            <Slide direction="up" in={unauthenticatedErrorShown} timeout={200} mountOnEnter unmountOnExit>
-                <Alert severity="warning"  sx={{position: 'fixed', bottom: '10px', left: '10%', width: '80%', borderRadius: '10px', fontSize: '1.5rem' , justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8c379', color: '#693d00'}}>
-                    Please <a href="/login">log in</a> or <a href="/register">create an account</a>
-                </Alert>
-            </Slide>
         </>
     )
 }

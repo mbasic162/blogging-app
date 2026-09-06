@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {styled, alpha} from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -40,6 +40,26 @@ const StyledInputBase = styled(InputBase)(({theme}) => ({
 }));
 
 export default function NavBar() {
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+
+    useEffect(() => {
+        let handleUnauthenticated = () => {
+            setUser(null);
+        };
+
+        window.addEventListener('unauthenticatedAlert', handleUnauthenticated);
+
+        return () => {
+            window.removeEventListener(
+                'unauthenticatedAlert',
+                handleUnauthenticated
+            );
+        };
+    }, []);
+
     const [anchorEl, setAnchorEl] = useState(null);
 
     const isMenuOpen = Boolean(anchorEl);
@@ -115,7 +135,7 @@ export default function NavBar() {
                         color="inherit"
                         sx={{ml: 1}}
                     >
-                        <Avatar src={localStorage.getItem('user') === null ? null : JSON.parse(localStorage.getItem('user')).profilePicture} />
+                        <Avatar src={user?.profilePicture ?? null} />
                     </IconButton>
                 </Toolbar>
             </AppBar>

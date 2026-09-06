@@ -1,8 +1,8 @@
 import {Card, Divider} from "@mui/material";
-import {encode} from '/../utils/UriSanitiser.jsx'
-import PreviewHeader from "./PreviewHeader.jsx";
-import PreviewBody from "./PreviewBody.jsx";
-import PreviewFooter from "./PreviewFooter.jsx";
+import {encode} from '/src/utils/UriSanitiser.jsx'
+import PreviewHeader from "/src/components/preview/PreviewHeader.jsx";
+import PreviewBody from "/src/components/preview/PreviewBody.jsx";
+import PreviewFooter from "/src/components/preview/PreviewFooter.jsx";
 
 
 export default function PostPreview({id, title, rating, date, username, profilePicture}) {

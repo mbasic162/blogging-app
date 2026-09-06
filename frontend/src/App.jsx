@@ -1,25 +1,41 @@
+import {useEffect} from 'react'
 import {createBrowserRouter,RouterProvider} from 'react-router-dom'
 import Home from './pages/Home'
 import Post from './pages/Post'
 import Profile from './pages/Profile'
 import Register from './pages/Register'
 import Login from './pages/Login'
+import CreatePost from './pages/CreatePost'
 import axios from 'axios'
 
 
 async function postLoader({params}) {
-    return (await axios.get(`http://localhost:8080/post/${params.postURI}`)).data
+    return (await axios.get(`/post/${params.postURI}`)).data
 }
 
 async function profileLoader({params}) {
-    return (await axios.get(`http://localhost:8080/user/${params.username}`)).data
+    return (await axios.get(`/user/${params.username}`)).data
 }
 
 export default function App() {
+
+    useEffect(() => {
+        if (!localStorage.getItem('token')) {
+            return;
+        }
+
+        axios.get('/auth/verify').catch(() => {})
+    }, []);
+
+
     const router = createBrowserRouter([
         {
             path: "/",
             element: <Home/>
+        },
+        {
+            path: "/post/create",
+            element: <CreatePost/>
         },
         {
             path: "/post/:postURI",

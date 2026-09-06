@@ -6,6 +6,7 @@ import './index.css'
 import NavBar from './components/NavBar.jsx'
 import theme from './theme.jsx'
 import axios from 'axios'
+import UnauthenticatedAlert from './components/UnauthenticatedAlert.jsx'
 
 axios.defaults.baseURL = 'http://localhost:8080'
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -24,6 +25,7 @@ axios.interceptors.response.use(
         if (error?.response?.status === 401) {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
+            window.dispatchEvent(new Event('unauthenticatedAlert'));
         }
         return Promise.reject(error)
     }   
@@ -35,6 +37,7 @@ createRoot(document.getElementById('root')).render(
             <CssBaseline/>
             <NavBar/>
             <App/>
+            <UnauthenticatedAlert/>
         </ThemeProvider>
     </StrictMode>
 )
