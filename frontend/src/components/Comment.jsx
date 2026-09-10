@@ -1,12 +1,14 @@
-import {Card, Divider, Typography, Toolbar, IconButton, Box} from "@mui/material";
+import {Card, Divider, Typography, Toolbar, IconButton, Box, Button} from "@mui/material";
 import {encode} from '/src/utils/UriSanitiser.jsx'
 import PreviewHeader from "/src/components/preview/PreviewHeader.jsx";
 import PreviewBody from "/src/components/preview/PreviewBody.jsx";
+import CommentReply from "/src/components/CommentReply.jsx";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt'
 import ShareIcon from '@mui/icons-material/Share';
+import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
 import { useState } from "react";
 import axios from "axios";
 
@@ -15,7 +17,7 @@ export default function Comment({id, content, ratingConst, date, username, profi
     const [userLiked, setUserLiked] = useState(userLikedConst);
     const [userDisliked, setUserDisliked] = useState(userDislikedConst);
     const [rating, setRating] = useState(ratingConst);
-
+    const [replyOpen, setReplyOpen] = useState(false);
 
     const commentURI = () => {
         if (content.length > 30 && content[30] !== ' ') {
@@ -82,37 +84,45 @@ export default function Comment({id, content, ratingConst, date, username, profi
     }
 
     return (
-        <Card sx={{marginTop: "5%", marginBottom: "5%", boxShadow: "2px 2px 1px #a7a7a7"}}>
-            <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate}/>
-            <Divider sx={{borderBottomWidth: 2}}/>
-            <PreviewBody body={content}/>
-            <Divider sx={{borderBottomWidth: 2}}/>
-            <Toolbar>
-                <IconButton
-                    size="large"
-                    aria-label="like"
-                    onClick={handleLikeClick}
-                >
-                    {userLiked ? <ThumbUpAltIcon fontSize="large"/> : <ThumbUpOffAltIcon fontSize="large"/>}
-                </IconButton>
-                <Typography variant="h4">
-                    {rating}
-                </Typography>
-                <IconButton
-                    size="large"
-                    aria-label="dislike"
-                    onClick={handleDislikeClick}
-                >
-                    {userDisliked ? <ThumbDownAltIcon fontSize="large"/> : <ThumbDownOffAltIcon fontSize="large"/>}
-                </IconButton>
-                <Box flexGrow="1"/>
-                <IconButton
-                    size="large"
-                    aria-label="share"
-                >
-                    <ShareIcon fontSize="large"/>
-                </IconButton>
-            </Toolbar>
-        </Card>
+        <>
+            <Card sx={{marginTop: "5%", marginBottom: "20px", boxShadow: "2px 2px 1px #a7a7a7"}}>
+                <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate}/>
+                <Divider sx={{borderBottomWidth: 2}}/>
+                <PreviewBody body={content}/>
+                <Divider sx={{borderBottomWidth: 2}}/>
+                <Toolbar>
+                    <IconButton
+                        size="large"
+                        aria-label="like"
+                        onClick={handleLikeClick}
+                    >
+                        {userLiked ? <ThumbUpAltIcon fontSize="large"/> : <ThumbUpOffAltIcon fontSize="large"/>}
+                    </IconButton>
+                    <Typography variant="h4">
+                        {rating}
+                    </Typography>
+                    <IconButton
+                        size="large"
+                        aria-label="dislike"
+                        onClick={handleDislikeClick}
+                    >
+                        {userDisliked ? <ThumbDownAltIcon fontSize="large"/> : <ThumbDownOffAltIcon fontSize="large"/>}
+                    </IconButton>
+                    <Box flexGrow="1"/>
+                    <Button variant="outlined" color="primary" size="large" sx={{fontSize: "1.5rem", paddingRight: "40px", paddingLeft: "40px"}} onClick={() => setReplyOpen(!replyOpen)}>
+                        <CommentOutlinedIcon color="primary" fontSize="large" sx={{ pr: "5px"}}/>
+                        Reply
+                    </Button>
+                    <Box flexGrow="1"/>
+                    <IconButton
+                        size="large"
+                        aria-label="share"
+                    >
+                        <ShareIcon fontSize="large"/>
+                    </IconButton>
+                </Toolbar>
+            </Card>
+            {replyOpen ? <CommentReply parentCommentId={id}/> : null}
+        </>
     );
 }

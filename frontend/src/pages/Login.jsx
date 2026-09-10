@@ -22,7 +22,7 @@ export default function Register() {
                             username: values.username,
                             password: values.password
                         }
-                        axios.post('http://localhost:8080/auth/login', data, {
+                        axios.post('/auth/login', data, {
                             headers: {
                                 'Content-Type': 'application/json'
                             }
