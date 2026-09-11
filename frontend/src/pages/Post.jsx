@@ -1,14 +1,16 @@
 import {useParams, useLoaderData} from "react-router-dom"
-import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton} from "@mui/material"
+import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Button} from "@mui/material"
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ShareIcon from '@mui/icons-material/Share';
+import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
 import axios from "axios";
 import {useState} from "react";
 import PreviewContainer from "/src/components/PreviewContainer";
 import Comment from "/src/components/Comment";
+import CommentReply from "/src/components/CommentReply";
 
 export default function Post() {
     const post = useLoaderData();
@@ -16,6 +18,8 @@ export default function Post() {
     const [userLiked, setUserLiked] = useState(post.userLiked);
     const [userDisliked, setUserDisliked] = useState(post.userDisliked);
     const [rating, setRating] = useState(post.rating);
+    const [replyOpen, setReplyOpen] = useState(false);
+
 
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
@@ -126,9 +130,13 @@ export default function Post() {
                     </IconButton>
                 </Toolbar>
                 <Divider sx={{borderBottomWidth: 2}}/>
-                <Typography marginTop="2%" variant="h4" textAlign="left">
-                    Comments:
-                </Typography>
+                <Toolbar alignItems="center" sx={{justifyContent: "center", marginTop: "2%", marginBottom: "2%"}}>
+                    <Button variant="outlined" color="primary" size="large" sx={{fontSize: "1.5rem", paddingRight: "40px", paddingLeft: "40px", backgroundColor: "white"}} onClick={() => setReplyOpen(!replyOpen)}>
+                        <CommentOutlinedIcon color="primary" fontSize="large" sx={{ pr: "5px"}}/>
+                        Leave a comment
+                    </Button>
+                </Toolbar>
+                {replyOpen ? <CommentReply parentPostId={post.id}/> : null}
                 <PreviewContainer>
                     {post.comments.map((comment) => (
                         <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked}/>
