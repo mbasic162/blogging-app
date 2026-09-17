@@ -60,7 +60,7 @@ export default function Profile() {
                     </Grid>
                 </Grid>
                 <Box flexBasis="100%" pt="5%" pb="5%" display="flex" alignItems="center" justifyContent="center" flexDirection="column">
-                    {description ? <Typography variant="h5"> {description} </Typography> : null}
+                    {description && <Typography variant="h5"> {description} </Typography>}
                 </Box>
                 <Box width="100%">
                     <TabContext value={tabContextValue}>
@@ -79,7 +79,7 @@ export default function Profile() {
                         <TabPanel value="Comments">
                             <PreviewContainer>
                                 {comments.map((comment) => (
-                                    <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked}/>
+                                    <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} depth={0}/>
                                 ))}
                             </PreviewContainer>
                         </TabPanel>

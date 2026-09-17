@@ -31,7 +31,7 @@ public class Post {
     private int rating = 0;
     @ManyToOne
     private User user;
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "parentPost")
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "parentPost")
     private Set<Comment> comments = new HashSet<>();
     private final LocalDateTime createdAt = LocalDateTime.now();
     @Accessors(prefix = "is")

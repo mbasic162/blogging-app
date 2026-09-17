@@ -33,7 +33,7 @@ public class Comment {
     private Post parentPost;
     @ManyToOne
     private Comment parentComment;
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "parentComment")
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "parentComment")
     private Set<Comment> comments = new HashSet<>();
     private final LocalDateTime createdAt = LocalDateTime.now();
     @Accessors(prefix = "is")

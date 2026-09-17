@@ -4,6 +4,7 @@ import com.example.bloggingapp.exception.PostNotFoundException;
 import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.repository.CommentRepository;
 import com.example.bloggingapp.repository.PostRepository;
 import com.example.bloggingapp.service.PostService;
 import com.example.bloggingapp.service.UserService;
@@ -21,6 +22,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final UserService userService;
     private final ViewHelper viewHelper;
 
@@ -84,6 +86,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPostForViewByURI(String postURI, User authUser) {
         Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        post.setComments(commentRepository.findByParentPost(post));
         if (authUser == null) {
             if (!viewHelper.isPostViewable(post)) {
                 throw new PostNotFoundException("Post not found!");

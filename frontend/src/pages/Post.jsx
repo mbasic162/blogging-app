@@ -20,7 +20,6 @@ export default function Post() {
     const [rating, setRating] = useState(post.rating);
     const [replyOpen, setReplyOpen] = useState(false);
 
-
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
             window.dispatchEvent(new Event('unauthenticatedAlert'));
@@ -130,16 +129,16 @@ export default function Post() {
                     </IconButton>
                 </Toolbar>
                 <Divider sx={{borderBottomWidth: 2}}/>
-                <Toolbar alignItems="center" sx={{justifyContent: "center", marginTop: "2%", marginBottom: "2%"}}>
+                <Toolbar sx={{justifyContent: "center", marginTop: "2%"}}>
                     <Button variant="outlined" color="primary" size="large" sx={{fontSize: "1.5rem", paddingRight: "40px", paddingLeft: "40px", backgroundColor: "white"}} onClick={() => setReplyOpen(!replyOpen)}>
                         <CommentOutlinedIcon color="primary" fontSize="large" sx={{ pr: "5px"}}/>
                         Leave a comment
                     </Button>
                 </Toolbar>
-                {replyOpen ? <CommentReply parentPostId={post.id}/> : null}
+                {replyOpen && <CommentReply parentPostId={post.id}/>}
                 <PreviewContainer>
                     {post.comments.map((comment) => (
-                        <Comment key={comment.id} id={comment.id} content={comment.content} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked}/>
+                        <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} depth={0}/>
                     ))}
                 </PreviewContainer>
             </Container>
