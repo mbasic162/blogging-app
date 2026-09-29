@@ -119,6 +119,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Set<User> findBlocked(User authUser) {
+        Set<User> blockedUsers = authUser.getBlockedUsers();
+        blockedUsers.removeIf(blockedUser -> !viewHelper.isUserViewable(blockedUser) || blockedUser.getBlockedUsers().contains(authUser));
+        return blockedUsers;
+    }
+
+    @Override
     public void follow(String username, String authUsername) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
@@ -228,7 +235,7 @@ public class UserServiceImpl implements UserService {
         }
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
         if (passwordEncoder.matches(request.newPassword(), authUser.getPassword())) {
-            throw new IllegalArgumentException("New password must be different from the old one!");
+            return;
         }
         userRepository.changePassword(authUser, encodedPassword);
     }
@@ -236,20 +243,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changeDescription(String newDescription, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (authUser.getDescription().equals(newDescription)) {
+        newDescription = newDescription == null ? "" : newDescription;
+        if (authUser.getDescription() != null && authUser.getDescription().equals(newDescription)) {
             throw new IllegalArgumentException("New description must be different from the old one!");
         }
         userRepository.changeDescription(authUser, newDescription);
     }
 
     @Override
-    public void changeProfilePicture(MultipartFile profilePicture, String authUsername) {
+    public void changeProfilePicture(MultipartFile newProfilePicture, String authUsername) {
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (profilePicture == null || profilePicture.isEmpty()) {
+        if (newProfilePicture == null || newProfilePicture.isEmpty()) {
             userRepository.changeProfilePictureName(authUser, "default.jpg");
             return;
         }
-        if (!imageService.isValid(profilePicture)) {
+        if (!imageService.isValid(newProfilePicture)) {
             throw new IllegalArgumentException("Profile picture is invalid!");
         }
         String profilePictureName = authUser.getProfilePictureName();
@@ -257,7 +265,7 @@ public class UserServiceImpl implements UserService {
             profilePictureName = "default.jpg";
         }
         Path path = Paths.get(FileStorageConfig.PROFILE_PICTURE_DIR, profilePictureName);
-        userRepository.changeProfilePictureName(authUser, imageService.save(profilePicture));
+        userRepository.changeProfilePictureName(authUser, imageService.save(newProfilePicture));
         if (!profilePictureName.equals("default.jpg")) {
             try {
                 Files.delete(path);

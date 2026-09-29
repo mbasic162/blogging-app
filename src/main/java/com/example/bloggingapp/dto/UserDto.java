@@ -9,7 +9,6 @@ public record UserDto(
         Set<UserFollowDto> followers,
         Set<UserFollowDto> following,
         Set<PostPreviewDto> posts,
-        Set<CommentPreviewDto> comments,
-        boolean isUserBlocked
+        Set<CommentPreviewDto> comments
 ) {
 }

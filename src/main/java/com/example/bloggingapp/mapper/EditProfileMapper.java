@@ -1,13 +1,15 @@
 package com.example.bloggingapp.mapper;
 
-import com.example.bloggingapp.dto.UserFollowDto;
+import com.example.bloggingapp.dto.EditProfileDto;
 import com.example.bloggingapp.mapper.helper.UserMapperHelper;
 import com.example.bloggingapp.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UserMapperHelper.class})
-public interface UserFollowMapper {
+public interface EditProfileMapper {
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
-    UserFollowDto toDto(User user);
+    @Mapping(target = "isPrivate", source = "private")
+    @Mapping(target = "isDeleted", source = "deleted")
+    EditProfileDto toDto(User user);
 }

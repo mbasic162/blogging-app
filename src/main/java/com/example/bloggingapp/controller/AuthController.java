@@ -26,8 +26,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginDto> login(@RequestBody @Valid LoginRequest loginRequest) {
-        String token = authService.login(loginRequest);
         User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        String token = authService.login(loginRequest, user);
         return ResponseEntity.ok(userLoginMapper.toDto(user, token));
     }
 

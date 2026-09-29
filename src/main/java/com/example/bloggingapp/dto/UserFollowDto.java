@@ -1,4 +1,8 @@
 package com.example.bloggingapp.dto;
 
-public record UserFollowDto(String username) {
+public record UserFollowDto(
+        Long id,
+        String username,
+        String profilePicture
+) {
 }

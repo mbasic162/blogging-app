@@ -4,7 +4,6 @@ import com.example.bloggingapp.dto.request.LoginRequest;
 import com.example.bloggingapp.dto.request.RegisterRequest;
 import com.example.bloggingapp.enums.ErrorField;
 import com.example.bloggingapp.exception.FormException;
-import com.example.bloggingapp.exception.UserNotFoundException;
 import com.example.bloggingapp.model.User;
 import com.example.bloggingapp.security.JwtUtils;
 import com.example.bloggingapp.service.AuthService;
@@ -59,9 +58,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(LoginRequest loginRequest) {
-        User user = userService.findByUsername(loginRequest.username()).orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
+    public String login(LoginRequest loginRequest, User user) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
+        if (user.getDeleted()) {
+            user.setDeleted(false);
+            userService.save(user);
+        }
         return jwtUtils.generateToken(user.getUsername(), user.getRoles());
     }
 

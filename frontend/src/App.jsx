@@ -6,6 +6,7 @@ import Profile from './pages/Profile'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import CreatePost from './pages/CreatePost'
+import EditProfile from './pages/EditProfile'
 import axios from 'axios'
 
 
@@ -24,7 +25,7 @@ export default function App() {
             return;
         }
 
-        axios.get('/auth/verify').catch(() => {})
+        axios.get('/auth/verify');
     }, []);
 
 
@@ -32,6 +33,10 @@ export default function App() {
         {
             path: "/",
             element: <Home/>
+        },
+        {
+            path: "/edit-profile",
+            element: <EditProfile/>
         },
         {
             path: "/post/create",

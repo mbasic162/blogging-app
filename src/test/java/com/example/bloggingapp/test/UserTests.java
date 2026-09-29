@@ -331,7 +331,7 @@ public class UserTests {
         PasswordChangeRequest request = new PasswordChangeRequest("test_User", "test_User2");
         mockMvc.perform(post("/user/changePassword").contentType(MediaType.APPLICATION_JSON)
                         .content(objectWriter.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

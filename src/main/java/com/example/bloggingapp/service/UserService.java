@@ -26,6 +26,8 @@ public interface UserService {
 
     Set<User> findFollowing(String username, User authUser);
 
+    Set<User> findBlocked(User authUser);
+
     void follow(String username, String authUsername);
 
     void unfollow(String username, String authUsername);
@@ -42,7 +44,7 @@ public interface UserService {
 
     void changeDescription(String newDescription, String authUsername);
 
-    void changeProfilePicture(MultipartFile profilePicture, String authUsername);
+    void changeProfilePicture(MultipartFile newProfilePicture, String authUsername);
 
     void goPrivate(String authUsername);
 

@@ -1,146 +1,91 @@
-import {useState, useEffect} from 'react';
-import {styled, alpha} from '@mui/material/styles';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import SettingsIcon from '@mui/icons-material/Settings';
-import InputBase from '@mui/material/InputBase';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import { Avatar } from '@mui/material';
-
-const Search = styled('div')(({theme}) => ({
-    position: 'relative',
-    backgroundColor: alpha(theme.palette.common.black, 0.15),
-    '&:hover': {
-        backgroundColor: alpha(theme.palette.common.black, 0.25),
-    },
-    width: '70%',
-    maxWidth: '500'
-}));
-
-const SearchIconWrapper = styled('div')(({theme}) => ({
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({theme}) => ({
-    '& .MuiInputBase-input': {
-        padding: theme.spacing(1, 1, 1, 0),
-        textAlign: 'center',
-        width: '100%'
-    },
-}));
+import {useState, useEffect} from 'react'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
+import SettingsIcon from '@mui/icons-material/Settings'
+import MenuItem from '@mui/material/MenuItem'
+import Menu from '@mui/material/Menu'
+import SearchIcon from '@mui/icons-material/Search'
+import { Avatar, TextField } from '@mui/material'
 
 export default function NavBar() {
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
+    const [user, setUser] = useState(null)
+    const [anchorEl, setAnchorEl] = useState(null)
 
     useEffect(() => {
-        let handleUnauthenticated = () => {
-            setUser(null);
-        };
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) setUser(JSON.parse(storedUser))
+    }, [])
 
-        window.addEventListener('unauthenticatedAlert', handleUnauthenticated);
+    useEffect(() => {
+        const handleLogout = () => setUser(null)
+        window.addEventListener('unauthenticatedAlert', handleLogout)
+        return () => window.removeEventListener('unauthenticatedAlert', handleLogout)
+    }, [])
 
-        return () => {
-            window.removeEventListener(
-                'unauthenticatedAlert',
-                handleUnauthenticated
-            );
-        };
-    }, []);
+    useEffect(() => {
+        const handleUserUpdate = (event) => setUser(event.detail)
+        window.addEventListener('userUpdated', handleUserUpdate)
+        return () => window.removeEventListener('userUpdated', handleUserUpdate)
+    }, [])
 
-    const [anchorEl, setAnchorEl] = useState(null);
+    const openMenu = (e) => setAnchorEl(e.currentTarget)
+    const closeMenu = () => setAnchorEl(null)
 
-    const isMenuOpen = Boolean(anchorEl);
+    function handleOpenProfile() {
+        closeMenu()
+        window.location.href = `/${user.username}`
+    }
 
-    const handleProfileMenuOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+    function handleLogout() {
+        closeMenu()
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        setUser(null)
+        window.location.href = '/'
+    }
 
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
-
-    const menuId = 'account icon menu';
-    const renderMenu = (
-        <Menu
-            anchorEl={anchorEl}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            id={menuId}
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            open={isMenuOpen}
-            onClose={handleMenuClose}
-        >
-            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-        </Menu>
-    );
+    function handleEditProfile() {
+        closeMenu()
+        window.location.href = '/edit-profile'
+    }
 
     return (
-        <Box sx={{flexGrow: 1}}>
-            <AppBar position='fixed'
-                    sx={{
-                        color: '#000000',
-                        backgroundColor: '#FFFFFF',
-                        borderBottom: 'solid',
-                        borderBottomColor: '#4F4F4F',
-                        boxShadow: 'none'
-                    }}
-            >
+        <Box>
+            <AppBar position="fixed" sx={{backgroundColor: 'white', color: 'black', borderBottom: '1px solid #4F4F4F', boxShadow: 'none'}}>
                 <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="settings"
-                        sx={{mr: 1}}
-                    >
-                        <SettingsIcon/>
+                    <IconButton size="large" edge="start" color="inherit">
+                        <SettingsIcon />
                     </IconButton>
-                    <Box sx={{flexGrow: 1}}/>
-                    <Search>
-                        <SearchIconWrapper>
-                            <SearchIcon/>
-                        </SearchIconWrapper>
-                        <StyledInputBase
-                            placeholder="Search…"
-                            aria-label='search'
-                        />
-                    </Search>
-                    <Box sx={{flexGrow: 1}}/>
-                    <IconButton
-                        size="large"
-                        edge="end"
-                        aria-label="user account"
-                        aria-controls={menuId}
-                        aria-haspopup="true"
-                        onClick={handleProfileMenuOpen}
-                        color="inherit"
-                        sx={{ml: 1}}
-                    >
-                        <Avatar src={user?.profilePicture ?? null} />
+                    <Box sx={{flexGrow: 1}} />
+                    <Box sx={{display: 'flex', alignItems: 'center', gap: 1, width: '70%', maxWidth: 500, padding: '8px', borderRadius: '4px'}}>
+                        <SearchIcon sx={{color: '#999'}} />
+                        <TextField variant="outlined" placeholder="Search..." size="small" sx={{flex: 1}} />
+                    </Box>
+                    <Box sx={{flexGrow: 1}} />
+                    <IconButton size="large" edge="end" onClick={openMenu} color="inherit">
+                        <Avatar src={user?.profilePicture} />
                     </IconButton>
                 </Toolbar>
             </AppBar>
-            <Toolbar/>
-            {renderMenu}
+            <Toolbar />
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                {
+                    user &&
+                    [
+                        <MenuItem key="0" onClick={handleOpenProfile}>Profile</MenuItem>,
+                        <MenuItem key="1" onClick={handleEditProfile}>Edit profile</MenuItem>,
+                        <MenuItem key="2" onClick={handleLogout}>Logout</MenuItem>
+                    ]
+                }
+                {
+                    !user &&
+                    [
+                        <MenuItem key="3" onClick={() => {closeMenu(); window.location.href = '/login'}}>Login</MenuItem>,
+                    ]
+                }
+            </Menu>
         </Box>
-    );
+    )
 }

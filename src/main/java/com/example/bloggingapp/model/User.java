@@ -37,7 +37,7 @@ public class User {
     private String email;
     private String password;
     @Size(max = 200)
-    private String description;
+    private String description = "";
     private final LocalDate createdOn = LocalDate.now();
     @Accessors(prefix = "is")
     private Boolean isPrivate = false;

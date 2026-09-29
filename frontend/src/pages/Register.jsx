@@ -1,4 +1,4 @@
-import {TextField, Button, Checkbox, Card, Container, Box} from '@mui/material'
+import {TextField, Button, Checkbox, Card, Container, Box, Typography} from '@mui/material'
 import InputFileUpload from '../components/InputFileUpload.jsx'
 import { ErrorMessage, Field, Form, Formik} from 'formik'
 import * as Yup from 'yup'
@@ -115,6 +115,9 @@ export default function Register() {
                         </Form>
                     )}
                 </Formik>
+                <Typography variant='h6' marginTop="20px">
+                    Already have an account? <a href="/login">Log in</a>
+                </Typography>
             </Card>
         </Container>
         </>

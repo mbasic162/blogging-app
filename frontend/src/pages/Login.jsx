@@ -1,4 +1,4 @@
-import {TextField, Button, Card, Container} from '@mui/material'
+import {TextField, Button, Card, Container, Typography} from '@mui/material'
 import { ErrorMessage, Field, Form, Formik} from 'formik'
 import * as Yup from 'yup'
 import axios from 'axios'
@@ -59,6 +59,9 @@ export default function Register() {
                         </Button>
                     </Form>
                 </Formik>
+                <Typography variant='h6' marginTop="20px">
+                    Don't have an account? <a href="/register">Register</a>
+                </Typography>
             </Card>
         </Container>
         </>

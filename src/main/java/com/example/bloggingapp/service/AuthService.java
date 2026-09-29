@@ -8,7 +8,7 @@ public interface AuthService {
 
     User register(RegisterRequest registerRequest);
 
-    String login(LoginRequest loginRequest);
+    String login(LoginRequest loginRequest, User user);
 
     String login(User user);
 }

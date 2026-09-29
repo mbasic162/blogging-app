@@ -1,16 +1,10 @@
 package com.example.bloggingapp.controller;
 
-import com.example.bloggingapp.dto.CommentDto;
-import com.example.bloggingapp.dto.PostPreviewDto;
-import com.example.bloggingapp.dto.UserDto;
-import com.example.bloggingapp.dto.UserFollowDto;
+import com.example.bloggingapp.dto.*;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.exception.UserNotFoundException;
-import com.example.bloggingapp.mapper.CommentMapper;
-import com.example.bloggingapp.mapper.PostPreviewMapper;
-import com.example.bloggingapp.mapper.UserFollowMapper;
-import com.example.bloggingapp.mapper.UserMapper;
+import com.example.bloggingapp.mapper.*;
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
@@ -40,6 +34,7 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
     private final UserFollowMapper userFollowMapper;
+    private final EditProfileMapper editProfileMapper;
     private final PostService postService;
     private final CommentService commentService;
     private final PostPreviewMapper postPreviewMapper;
@@ -116,6 +111,16 @@ public class UserController {
         }
         Set<User> following = userService.findFollowing(username, authUser);
         return ResponseEntity.ok(following.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
+    }
+
+    @GetMapping("/editProfileDto")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<EditProfileDto> getEditProfileDto(
+            Authentication authentication
+    ) {
+        User authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        authUser.setBlockedUsers(userService.findBlocked(authUser));
+        return ResponseEntity.ok(editProfileMapper.toDto(authUser));
     }
 
     @PostMapping("/follow")
