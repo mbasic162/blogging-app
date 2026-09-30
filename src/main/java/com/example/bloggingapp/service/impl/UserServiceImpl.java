@@ -43,18 +43,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
+    public Boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
     @Override
-    public boolean existsByUsernameIgnoreCase(String username) {
+    public Boolean existsByUsernameIgnoreCase(String username) {
         return userRepository.existsByUsernameIgnoreCase(username);
     }
 
     @Override
-    public boolean existsByEmailIgnoreCase(String email) {
+    public Boolean existsByEmailIgnoreCase(String email) {
         return userRepository.existsByEmailIgnoreCase(email);
+    }
+
+    @Override
+    public Boolean isBlockedByUsername(User authUser, String username) {
+        return userRepository.isBlockedByUsername(authUser, username);
     }
 
     @Override
@@ -65,18 +70,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserForViewByUsername(String username, User authUser) {
         User user = findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        if (!viewHelper.isUserViewable(user)) {
+            throw new UserNotFoundException("User not found!");
+        }
         if (authUser == null) {
-            if (!viewHelper.isUserViewable(user)) {
-                throw new UserNotFoundException("User not found!");
-            }
             viewHelper.filterUserContent(user);
             return user;
         }
         if (authUser.getBlockedUsers().contains(user)) {
-            return new User(username, null, null, null, null, false);
+            return new User(username);
         }
         if (user.getBlockedUsers().contains(authUser)) {
-            return new User(username, null, null, null, null, false);
+            throw new UserNotFoundException("User not found!");
         }
         viewHelper.filterUserContent(user, authUser);
         return user;

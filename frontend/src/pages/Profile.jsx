@@ -1,7 +1,9 @@
 import {useState} from "react";
 import {useLoaderData} from "react-router-dom";
-import {Avatar, Container, Typography, Box, Grid, CssBaseline, Tab, Divider} from "@mui/material"
+import {Avatar, Container, Typography, Box, Grid, CssBaseline, Tab, Divider, IconButton, Menu, MenuItem} from "@mui/material"
 import {TabContext, TabList, TabPanel} from "@mui/lab"
+import MoreIcon from "@mui/icons-material/MoreVert";
+import axios from "axios";
 import PreviewContainer from "/src/components/PreviewContainer"
 import PostPreview from "/src/components/PostPreview"
 import Comment from "/src/components/Comment";
@@ -18,7 +20,40 @@ export default function Profile() {
     const following = user.following;
     const numberOfFollowers = followers ? followers.length : 0;
     const numberOfFollowing = following ? following.length : 0;
+    const [isUserBlocked, setIsUserBlocked] = useState(user.isUserBlocked);
+    const [anchorEl, setAnchorEl] = useState(null);
 
+    function openMenu(event) {
+        setAnchorEl(event.currentTarget);
+    }
+
+    function closeMenu() {
+        setAnchorEl(null);
+    }
+
+    function handleBlockToggle() {
+        closeMenu();
+        if(isUserBlocked){
+            axios.post("/user/unblock", {username: username})
+                .then(() => {
+                    setIsUserBlocked(false);
+                    window.location.reload();
+                    window.dispatchEvent(new CustomEvent('successAlert', {
+                        detail: 'User unblocked successfully'
+                }));
+            });            
+        }
+        else{
+            axios.post("/user/block", {username: username})
+                .then(() => {
+                    setIsUserBlocked(true);
+                    window.location.reload();
+                    window.dispatchEvent(new CustomEvent('successAlert', {
+                        detail: 'User blocked successfully'
+                    }));
+                });
+        }
+    }
 
     const handleTabPanelChange = (event, newValue) => {
         setTabContextValue(newValue);
@@ -33,13 +68,22 @@ export default function Profile() {
                 wordBreak: "break-word",
                 display: "flex",
                 flexWrap: "wrap",
-                justifyContent: "center"
+                justifyContent: "center",
+                position: "relative"
             }}>
                 <Avatar alt="profile picture" src={profilePicture} sx={{height: "135px", width: "135px", maxHeight: "33vh", maxWidth: "33vh"}}/>
+                <IconButton size="large" aria-label="menu" onClick={openMenu} sx={{position: "absolute", top: 0, right: 0}}>
+                    <MoreIcon fontSize="large"/>
+                </IconButton>
                 <Box flexBasis="100%" paddingBottom="5%"/>
                 <Typography variant="h4">
                     {username}
                 </Typography>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                    <MenuItem onClick={handleBlockToggle}>
+                        {isUserBlocked ? "Unblock user" : "Block user"}
+                    </MenuItem>
+                </Menu>
                 <Box flexBasis="100%" paddingBottom="5%"/>
                 <Grid container spacing={10}>
                     <Grid size="8">

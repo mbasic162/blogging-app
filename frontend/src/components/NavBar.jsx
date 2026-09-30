@@ -55,7 +55,7 @@ export default function NavBar() {
         <Box>
             <AppBar position="fixed" sx={{backgroundColor: 'white', color: 'black', borderBottom: '1px solid #4F4F4F', boxShadow: 'none'}}>
                 <Toolbar>
-                    <Box sx={{width: 130, height: 60, cursor: 'pointer'}} onClick={() => {window.location.href = '/'}}>
+                    <Box sx={{width: 120, height: 60, cursor: 'pointer'}} onClick={() => {window.location.href = '/'}}>
                         <Box component="img" src={logo} alt="Logo" sx={{width: '100%', height: '100%', objectFit: 'fill', display: 'block'}} />
                     </Box>
                     <Box sx={{flexGrow: 1}} />

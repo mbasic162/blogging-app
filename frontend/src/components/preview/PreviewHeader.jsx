@@ -1,9 +1,31 @@
-import {Avatar, Box, CardContent, IconButton, Typography} from "@mui/material";
+import {useState} from "react";
+import {Avatar, Box, CardContent, IconButton, Menu, MenuItem, Typography} from "@mui/material";
 import MoreIcon from "@mui/icons-material/MoreVert";
+import axios from "axios";
+
 export default function PreviewHeader({username, profilePicture, date}) {
+    const [anchorEl, setAnchorEl] = useState(null);
+
     function openProfile() {
         window.location.href = `/${username}`;
     }
+
+    function openMenu(event) {
+        setAnchorEl(event.currentTarget);
+    }
+
+    function closeMenu() {
+        setAnchorEl(null);
+    }
+
+    function handleBlock() {
+        closeMenu();
+        axios.post("/user/block", {username: username})
+        .then(() => {
+            window.dispatchEvent(new CustomEvent('successAlert', {detail: 'User blocked successfully'}))
+        });
+    }
+
     return (
         <CardContent sx={{padding: 0}}>
             <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1}}>
@@ -29,10 +51,14 @@ export default function PreviewHeader({username, profilePicture, date}) {
                     size="large"
                     edge="end"
                     aria-label="menu"
+                    onClick={openMenu}
                 >
                     <MoreIcon fontSize="large"/>
                 </IconButton>
             </Box>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                <MenuItem onClick={handleBlock}>Block user</MenuItem>
+            </Menu>
         </CardContent>
     );
 }

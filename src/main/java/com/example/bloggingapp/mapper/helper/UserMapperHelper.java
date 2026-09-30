@@ -1,11 +1,21 @@
 package com.example.bloggingapp.mapper.helper;
 
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.mapstruct.Context;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapperHelper {
+    private final UserService userService;
+
+    @Named("isUserBlocked")
+    public Boolean isUserBlocked(User user, @Context User authUser) {
+        return userService.isBlockedByUsername(authUser, user.getUsername());
+    }
 
     @Named("mapProfilePicture")
     public String mapProfilePicture(User user) {

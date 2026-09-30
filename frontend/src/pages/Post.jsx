@@ -1,10 +1,11 @@
 import {useParams, useLoaderData} from "react-router-dom"
-import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Button} from "@mui/material"
+import {Typography, Container, CssBaseline, Toolbar, Divider, Avatar, Box, IconButton, Button, Menu, MenuItem} from "@mui/material"
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ShareIcon from '@mui/icons-material/Share';
+import MoreIcon from '@mui/icons-material/MoreVert';
 import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
 import axios from "axios";
 import {useState} from "react";
@@ -14,11 +15,29 @@ import CommentReply from "/src/components/CommentReply";
 
 export default function Post() {
     const post = useLoaderData();
+    const formattedDate = new Date(post.date).toLocaleDateString();
     const {postURI} = useParams();
     const [userLiked, setUserLiked] = useState(post.userLiked);
     const [userDisliked, setUserDisliked] = useState(post.userDisliked);
     const [rating, setRating] = useState(post.rating);
     const [replyOpen, setReplyOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    function openMenu(event) {
+        setAnchorEl(event.currentTarget);
+    }
+
+    function closeMenu() {
+        setAnchorEl(null);
+    }
+
+    function handleBlock() {
+        closeMenu();
+        axios.post("/user/block", {username: post.username})
+        .then(() => {
+            window.dispatchEvent(new CustomEvent('successAlert', {detail: 'User blocked successfully'}))
+        })
+    }
 
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
@@ -94,9 +113,19 @@ export default function Post() {
                     </Typography>
                     <Box flexGrow="1"/>
                     <Typography variant="h5">
-                        {post.date}
+                        {formattedDate}
                     </Typography>
+                    <IconButton
+                        size="large"
+                        aria-label="menu"
+                        onClick={openMenu}
+                    >
+                        <MoreIcon fontSize="large"/>
+                    </IconButton>
                 </Toolbar>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                    <MenuItem onClick={handleBlock}>Block user</MenuItem>
+                </Menu>
                 <Divider sx={{borderBottomWidth: 2}}/>
                 <Typography marginTop="2%" variant="h6">
                     {post.content}

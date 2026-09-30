@@ -10,5 +10,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {UserFollowMapper.class, PostPreviewMapper.class, CommentPreviewMapper.class, UserMapperHelper.class})
 public interface UserMapper {
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
+    @Mapping(target = "isUserBlocked", source = "user", qualifiedByName = "isUserBlocked")
     UserDto toDto(User user, @Context User authUser);
 }

@@ -211,9 +211,8 @@ public class UserTests {
     @Test
     @Order(9)
     @WithMockUser("first_user")
-        //Returns a dto with just username so you can unblock users
-    void getUser_WithNewUser_AsFirstUser_WhenBlockedByNewUser_ShouldReturnOk() throws Exception {
-        mockMvc.perform(get("/user/new_user")).andExpect(status().isOk()).andDo(print());
+    void getUser_WithNewUser_AsFirstUser_WhenBlockedByNewUser_ShouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/user/new_user")).andExpect(status().isNotFound());
     }
 
     @Test

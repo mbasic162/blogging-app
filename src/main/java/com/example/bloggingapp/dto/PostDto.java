@@ -1,7 +1,7 @@
 package com.example.bloggingapp.dto;
 
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 public record PostDto(
@@ -13,7 +13,7 @@ public record PostDto(
         Integer rating,
         Boolean userLiked,
         Boolean userDisliked,
-        LocalDateTime createdAt,
+        LocalDate date,
         Set<CommentDto> comments
 ) {
 }

@@ -16,11 +16,13 @@ public interface UserService {
 
     User save(User user);
 
-    boolean existsByUsername(String username);
+    Boolean existsByUsername(String username);
 
-    boolean existsByUsernameIgnoreCase(String username);
+    Boolean existsByUsernameIgnoreCase(String username);
 
-    boolean existsByEmailIgnoreCase(String email);
+    Boolean existsByEmailIgnoreCase(String email);
+
+    Boolean isBlockedByUsername(User authUser, String username);
 
     Set<User> findFollowers(String username, User authUser);
 

@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -14,15 +13,16 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    boolean existsByUsername(String username);
+    Boolean existsByUsername(String username);
 
-    boolean existsByUsernameIgnoreCase(String username);
+    Boolean existsByUsernameIgnoreCase(String username);
 
-    boolean existsByEmailIgnoreCase(String email);
-
-    boolean existsById(@NonNull Long id);
+    Boolean existsByEmailIgnoreCase(String email);
 
     Optional<User> findByUsername(String username);
+
+    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:authUser AND bu.username=:username")
+    Boolean isBlockedByUsername(@Param("authUser") User authUser, @Param("username") String username);
 
     @Transactional
     @Modifying

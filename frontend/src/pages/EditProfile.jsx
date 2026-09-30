@@ -21,9 +21,16 @@ export default function Settings() {
         }
     }, [])
 
+    function openProfile(username) {
+        window.location.href = `/${username}`;
+    }
+
     function handleUnblock(username) {
         axios.post("/user/unblock", {username: username}).then(() => {
             setBlockedUsers(blockedUsers.filter((user) => user.username !== username))
+            window.dispatchEvent(new CustomEvent('successAlert', {
+                detail: 'User unblocked successfully'
+            }));
         })
     }
 
@@ -36,22 +43,24 @@ export default function Settings() {
                         Current Profile:
                     </Typography>
                     { blockedUsers.length > 0 &&
-                        <Typography textAlign="left" variant="h5" marginBottom="5%">
-                            Blocked Users:
-                        </Typography>
-                    }
-                    {blockedUsers.map((blockedUser) => (
-                        <Card key={blockedUser.id}  sx={{display: "flex", flexDirection: "row", alignItems: "center", marginBottom: "2%", padding: "2%", boxShadow: "2px 2px 1px #a7a7a7"}}>
-                            <Avatar src={blockedUser.profilePicture} />
-                            <Typography textAlign="left" variant="h4" marginLeft="2%">
-                                {blockedUser.username}
+                        <Box border= "1px solid" p={2} borderRadius="5px" marginBottom="5%">
+                            <Typography textAlign="left" variant="h5" marginBottom="5%">
+                                Blocked Users:
                             </Typography>
-                            <Box flexGrow={1} />
-                            <Button variant="contained" color="error" onClick={() => handleUnblock(blockedUser.username)}>
-                                Unblock
-                            </Button>
-                        </Card>
-                    ))}
+                            {blockedUsers.map((blockedUser) => (
+                                <Card key={blockedUser.id}  sx={{display: "flex", flexDirection: "row", alignItems: "center", marginBottom: "2%", padding: "2%", boxShadow: "2px 2px 1px #a7a7a7"}}>
+                                    <Avatar src={blockedUser.profilePicture} onClick={() => {openProfile(blockedUser.username)}} sx={{cursor : "pointer"}}/>
+                                    <Typography textAlign="left" variant="h4" marginLeft="2%" onClick={() => {openProfile(blockedUser.username)}} sx={{cursor : "pointer"}}>
+                                        {blockedUser.username}
+                                    </Typography>
+                                    <Box flexGrow={1} />
+                                    <Button variant="contained" color="error" onClick={() => handleUnblock(blockedUser.username)}>
+                                        Unblock
+                                    </Button>
+                                </Card>
+                            ))}
+                        </Box>
+                    }
                     <ChangeProfilePicture user={profile} setUser={setProfile}/>
                     <ChangeDescription user={profile} setUser={setProfile}/>
                     <ChangePrivate user={profile} setUser={setProfile}/>

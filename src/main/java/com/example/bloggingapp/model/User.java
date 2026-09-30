@@ -114,6 +114,10 @@ public class User {
         this.isPrivate = isPrivate;
     }
 
+    public User(String username) {
+        this.username = username;
+    }
+
     @Override
     public String toString() {
         return "User{" +
