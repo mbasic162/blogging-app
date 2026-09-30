@@ -3,11 +3,11 @@ import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
-import SettingsIcon from '@mui/icons-material/Settings'
 import MenuItem from '@mui/material/MenuItem'
 import Menu from '@mui/material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
 import { Avatar, TextField } from '@mui/material'
+import logo from '../assets/logo.svg'
 
 export default function NavBar() {
     const [user, setUser] = useState(null)
@@ -55,9 +55,9 @@ export default function NavBar() {
         <Box>
             <AppBar position="fixed" sx={{backgroundColor: 'white', color: 'black', borderBottom: '1px solid #4F4F4F', boxShadow: 'none'}}>
                 <Toolbar>
-                    <IconButton size="large" edge="start" color="inherit">
-                        <SettingsIcon />
-                    </IconButton>
+                    <Box sx={{width: 130, height: 60, cursor: 'pointer'}} onClick={() => {window.location.href = '/'}}>
+                        <Box component="img" src={logo} alt="Logo" sx={{width: '100%', height: '100%', objectFit: 'fill', display: 'block'}} />
+                    </Box>
                     <Box sx={{flexGrow: 1}} />
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1, width: '70%', maxWidth: 500, padding: '8px', borderRadius: '4px'}}>
                         <SearchIcon sx={{color: '#999'}} />
