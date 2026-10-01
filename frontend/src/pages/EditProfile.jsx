@@ -22,7 +22,7 @@ export default function Settings() {
     }, [])
 
     function openProfile(username) {
-        window.location.href = `/${username}`;
+        window.location.replace(`/${username}`);
     }
 
     function handleUnblock(username) {

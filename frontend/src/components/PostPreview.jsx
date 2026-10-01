@@ -21,6 +21,11 @@ export default function PostPreview({id, title, rating, date, username, profileP
             window.location.href = "/post/" + postURI()
         }
     }
+    function handleShare() {
+        navigator.clipboard.writeText(`${window.location.origin}/post/${postURI()}`).then(() => {
+            window.dispatchEvent(new CustomEvent('infoAlert', {detail: 'Link copied to clipboard'}));
+        });
+    }
     const formattedDate = new Date(date).toLocaleDateString();
     return (
         <Card sx={{marginTop: "5%", marginBottom: "5%", boxShadow: "2px 2px 1px #a7a7a7"}}>
@@ -28,7 +33,7 @@ export default function PostPreview({id, title, rating, date, username, profileP
             <Divider sx={{borderBottomWidth: 2}}/>
             <PreviewBody body={title} openFullView={openFullView}/>
             <Divider sx={{borderBottomWidth: 2}}/>
-            <PreviewFooter rating={rating}/>
+            <PreviewFooter rating={rating} onShare={handleShare}/>
         </Card>
     );
 }

@@ -61,19 +61,14 @@ export default function Comment({id, content, ratingConst, comments = [],date, u
         }
         if(userDisliked) {
             axios.post('/comment/removeDislike', {commentURI: commentURI()})
-                .then((response) => {
-                    if(response?.status!==200) {
-                    }
+                .then(() => {
                     setUserDisliked(false);
                     setRating(rating + 1);
                 })
         }
         else {
             axios.post('/comment/dislike', {commentURI: commentURI()})
-                .then((response) => {
-                    if(response?.status!==200) {
-                        return;
-                    }
+                .then(() => {
                     setUserDisliked(true);
                     setRating(rating - 1);
                     if(userLiked) {
@@ -82,6 +77,12 @@ export default function Comment({id, content, ratingConst, comments = [],date, u
                     }
                 })
         }   
+    }
+
+    function handleShare() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            window.dispatchEvent(new CustomEvent('infoAlert', {detail: 'Link copied to clipboard'}));
+        });
     }
 
     return (
@@ -119,6 +120,7 @@ export default function Comment({id, content, ratingConst, comments = [],date, u
                         <IconButton
                             size="large"
                             aria-label="share"
+                            onClick={handleShare}
                         >
                             <ShareIcon fontSize="large"/>
                         </IconButton>

@@ -1,7 +1,7 @@
 import {Box, CardActionArea, CardContent, IconButton, Toolbar, Typography} from "@mui/material";
 import ThumbsUpDownIcon from '@mui/icons-material/ThumbsUpDown';
 import ShareIcon from '@mui/icons-material/Share';
-export default function PreviewFooter({rating}) {
+export default function PreviewFooter({rating, onShare}) {
     return(
         <>
             <CardContent sx={{padding: 0}}>
@@ -15,6 +15,7 @@ export default function PreviewFooter({rating}) {
                         size="large"
                         edge="end"
                         aria-label="share"
+                        onClick={onShare}
                     >
                         <ShareIcon fontSize="large" sx={{marginRight: "2%"}}/>
                     </IconButton>

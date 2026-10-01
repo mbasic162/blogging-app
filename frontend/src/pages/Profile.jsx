@@ -31,6 +31,13 @@ export default function Profile() {
         setAnchorEl(null);
     }
 
+    function handleShare() {
+        closeMenu();
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            window.dispatchEvent(new CustomEvent('infoAlert', {detail: 'Link copied to clipboard'}));
+        });
+    }
+
     function handleBlockToggle() {
         closeMenu();
         if(isUserBlocked){
@@ -80,6 +87,7 @@ export default function Profile() {
                     {username}
                 </Typography>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                    <MenuItem onClick={handleShare}>Share profile</MenuItem>
                     <MenuItem onClick={handleBlockToggle}>
                         {isUserBlocked ? "Unblock user" : "Block user"}
                     </MenuItem>

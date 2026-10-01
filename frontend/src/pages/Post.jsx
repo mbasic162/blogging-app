@@ -39,6 +39,12 @@ export default function Post() {
         })
     }
 
+    function handleShare() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            window.dispatchEvent(new CustomEvent('infoAlert', {detail: 'Link copied to clipboard'}));
+        });
+    }
+
     function handleLikeClick() {
         if(!localStorage.getItem('token')) {
             window.dispatchEvent(new Event('unauthenticatedAlert'));
@@ -153,6 +159,7 @@ export default function Post() {
                     <IconButton
                         size="large"
                         aria-label="share"
+                        onClick={handleShare}
                     >
                         <ShareIcon fontSize="large"/>
                     </IconButton>

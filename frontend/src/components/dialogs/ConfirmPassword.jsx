@@ -11,7 +11,9 @@ export default function ConfirmPassword({message, buttonText, buttonColor = "pri
             await submitForm()
             await setFieldValue('currentPassword', '')
             setDialogShown(false)
-        } catch {}
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     return(

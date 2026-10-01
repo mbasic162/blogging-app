@@ -10,13 +10,11 @@ import { Avatar, TextField } from '@mui/material'
 import logo from '../assets/logo.svg'
 
 export default function NavBar() {
-    const [user, setUser] = useState(null)
-    const [anchorEl, setAnchorEl] = useState(null)
-
-    useEffect(() => {
+    const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem('user')
-        if (storedUser) setUser(JSON.parse(storedUser))
-    }, [])
+        return storedUser ? JSON.parse(storedUser) : null
+    })
+    const [anchorEl, setAnchorEl] = useState(null)
 
     useEffect(() => {
         const handleLogout = () => setUser(null)
