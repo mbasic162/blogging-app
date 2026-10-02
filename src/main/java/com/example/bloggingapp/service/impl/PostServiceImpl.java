@@ -109,6 +109,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Boolean isLikedByUser(Post post, User user) {
+        return postRepository.isLikedByUser(post, user);
+    }
+
+    @Override
+    public Boolean isDislikedByUser(Post post, User user) {
+        return postRepository.isDislikedByUser(post, user);
+    }
+
+    @Override
     @Transactional
     public void like(String authUsername, Long postId) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
@@ -116,10 +126,10 @@ public class PostServiceImpl implements PostService {
         if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
-        if (post.getLikedBy().contains(authUser)) {
+        if (isLikedByUser(post, authUser)) {
             throw new IllegalStateException("You already liked this post!");
         }
-        if (post.getDislikedBy().contains(authUser)) {
+        if (isDislikedByUser(post, authUser)) {
             postRepository.removeDislike(authUser.getId(), post.getId());
             postRepository.changeRating(post, 1);
         }
@@ -135,7 +145,7 @@ public class PostServiceImpl implements PostService {
         if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
-        if (!post.getLikedBy().contains(authUser)) {
+        if (!isLikedByUser(post, authUser)) {
             throw new IllegalStateException("You haven't liked this post!");
         }
         postRepository.removeLike(authUser.getId(), post.getId());
@@ -150,10 +160,10 @@ public class PostServiceImpl implements PostService {
         if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
-        if (post.getDislikedBy().contains(authUser)) {
+        if (isDislikedByUser(post, authUser)) {
             throw new IllegalStateException("You already disliked this post!");
         }
-        if (post.getLikedBy().contains(authUser)) {
+        if (isLikedByUser(post, authUser)) {
             postRepository.removeLike(authUser.getId(), post.getId());
             postRepository.changeRating(post, -1);
         }
@@ -170,7 +180,7 @@ public class PostServiceImpl implements PostService {
         if (!viewHelper.isPostViewable(post, authUser)) {
             throw new PostNotFoundException("Post not found!");
         }
-        if (!post.getDislikedBy().contains(authUser)) {
+        if (!isDislikedByUser(post, authUser)) {
             throw new IllegalStateException("You haven't disliked this post!");
         }
         postRepository.removeDislike(authUser.getId(), post.getId());

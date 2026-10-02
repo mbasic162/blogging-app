@@ -21,6 +21,10 @@ public interface PostService {
 
     Post getPostForViewByURI(String postURI, User authUser);
 
+    Boolean isLikedByUser(Post post, User user);
+
+    Boolean isDislikedByUser(Post post, User user);
+
     boolean existsByURI(String postURI);
 
     void like(String authUsername, Long postId);

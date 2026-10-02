@@ -164,6 +164,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Boolean isLikedByUser(Comment comment, User user) {
+        return commentRepository.isLikedByUser(comment, user);
+    }
+
+    @Override
+    public Boolean isDislikedByUser(Comment comment, User user) {
+        return commentRepository.isDislikedByUser(comment, user);
+    }
+
+    @Override
     @Transactional
     public void like(Long commentId, String authUsername) {
         User authUser = userService.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
@@ -171,10 +181,10 @@ public class CommentServiceImpl implements CommentService {
         if (!viewHelper.isCommentViewable(comment, authUser)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (comment.getLikedBy().contains(authUser)) {
+        if (isLikedByUser(comment, authUser)) {
             throw new IllegalStateException("You already liked this comment!");
         }
-        if (comment.getDislikedBy().contains(authUser)) {
+        if (isDislikedByUser(comment, authUser)) {
             commentRepository.removeDislike(authUser.getId(), comment.getId());
             commentRepository.changeRating(comment, 1);
         }
@@ -190,7 +200,7 @@ public class CommentServiceImpl implements CommentService {
         if (!viewHelper.isCommentViewable(comment, authUser)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (!comment.getLikedBy().contains(authUser)) {
+        if (!isLikedByUser(comment, authUser)) {
             throw new IllegalStateException("You haven't liked this comment!");
         }
         commentRepository.removeLike(authUser.getId(), comment.getId());
@@ -205,10 +215,10 @@ public class CommentServiceImpl implements CommentService {
         if (!viewHelper.isCommentViewable(comment, authUser)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (comment.getDislikedBy().contains(authUser)) {
+        if (isDislikedByUser(comment, authUser)) {
             throw new IllegalStateException("You already disliked this comment!");
         }
-        if (comment.getLikedBy().contains(authUser)) {
+        if (isLikedByUser(comment, authUser)) {
             commentRepository.removeLike(authUser.getId(), comment.getId());
             commentRepository.changeRating(comment, -1);
         }
@@ -224,7 +234,7 @@ public class CommentServiceImpl implements CommentService {
         if (!viewHelper.isCommentViewable(comment, authUser)) {
             throw new CommentNotFoundException("Comment not found!");
         }
-        if (!comment.getDislikedBy().contains(authUser)) {
+        if (!isDislikedByUser(comment, authUser)) {
             throw new IllegalStateException("You haven't disliked this comment!");
         }
         commentRepository.removeDislike(authUser.getId(), comment.getId());

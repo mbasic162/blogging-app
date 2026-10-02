@@ -3,13 +3,18 @@ package com.example.bloggingapp.service.helper;
 import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class ViewHelper {
+    private final UserRepository userRepository;
+
 
     public boolean isUserViewable(User user) {
         return !user.getPrivate() && !user.getDeleted() && user.getEnabled();
@@ -19,7 +24,7 @@ public class ViewHelper {
         if (authUser.equals(user)) {
             return true;
         }
-        return !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !user.getBlockedUsers().contains(authUser) && !authUser.getBlockedUsers().contains(user);
+        return !user.getPrivate() && !user.getDeleted() && user.getEnabled() && !userRepository.isUserBlocked(authUser, user) && !userRepository.isUserBlocked(user, authUser);
     }
 
     public boolean isPostViewable(Post post) {
@@ -88,11 +93,11 @@ public class ViewHelper {
     }
 
     public void filterUsers(Set<User> users) {
-        users.removeIf(user -> user.getPrivate() || user.getDeleted() || !user.getEnabled());
+        users.removeIf(user -> !isUserViewable(user));
     }
 
     public void filterUsers(Set<User> users, User authUser) {
-        users.removeIf(user -> !user.equals(authUser) && (user.getPrivate() || user.getDeleted() || !user.getEnabled() || user.getBlockedUsers().contains(authUser) || authUser.getBlockedUsers().contains(user)));
+        users.removeIf(user -> !isUserViewable(user, authUser));
     }
 
     public void filterUserContent(User user) {

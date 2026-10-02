@@ -29,6 +29,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost=:post AND c.isDeleted = false AND c.isHidden = false AND (c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true OR c.user=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=c.user)")
     Integer getViewableCommentCountByPostAuth(Post post, @Param("auth_user") User authUser);
 
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Comment c JOIN c.likedBy u WHERE c = :comment AND u = :user")
+    Boolean isLikedByUser(Comment comment, User user);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Comment c JOIN c.dislikedBy u WHERE c = :comment AND u = :user")
+    Boolean isDislikedByUser(Comment comment, User user);
+
     @Transactional
     @Modifying
     @Query(value = "INSERT INTO comment_likes (user_id, comment_id) VALUES (:user_id,:comment_id)", nativeQuery = true)

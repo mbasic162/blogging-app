@@ -21,8 +21,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
 
-    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:authUser AND bu.username=:username")
-    Boolean isBlockedByUsername(@Param("authUser") User authUser, @Param("username") String username);
+
+    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu.username=:username")
+    Boolean isUsernameBlocked(User parent, String username);
+
+
+    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu=:user")
+    Boolean isUserBlocked(User parent, User user);
+
+
+    @Query(value = "SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM User u JOIN u.following f WHERE u=:parent AND f=:user")
+    Boolean isFollowingUser(User parent, User user);
 
     @Transactional
     @Modifying

@@ -31,6 +31,10 @@ public interface CommentService {
 
     Integer getViewableCommentCountByPost(Post post, User authUser);
 
+    Boolean isLikedByUser(Comment comment, User user);
+
+    Boolean isDislikedByUser(Comment comment, User user);
+
     void like(Long commentId, String authUsername);
 
     void removeLike(Long commentId, String authUsername);

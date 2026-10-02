@@ -23,6 +23,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
     Set<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
 
+    @Query(value = "SELECT CASE WHEN COUNT(pl) > 0 THEN true ELSE false END FROM Post p JOIN p.likedBy pl WHERE p=:post AND pl=:user")
+    Boolean isLikedByUser(Post post, User user);
+
+    @Query(value = "SELECT CASE WHEN COUNT(pd) > 0 THEN true ELSE false END FROM Post p JOIN p.dislikedBy pd WHERE p=:post AND pd=:user")
+    Boolean isDislikedByUser(Post post, User user);
+
     @Transactional
     @Modifying
     @Query(value = "INSERT INTO post_likes (user_id, post_id) VALUES (:user_id,:post_id)", nativeQuery = true)

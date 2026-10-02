@@ -53,8 +53,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean isBlockedByUsername(User authUser, String username) {
-        return userRepository.isBlockedByUsername(authUser, username);
+    public Boolean isUsernameBlocked(User parent, String username) {
+        return userRepository.isUsernameBlocked(parent, username);
+    }
+
+    @Override
+    public Boolean isUserBlocked(User parent, User user) {
+        return userRepository.isUserBlocked(parent, user);
+    }
+
+    @Override
+    public Boolean isFollowingUser(User parent, User user) {
+        return userRepository.isFollowingUser(parent, user);
     }
 
     @Override
@@ -72,10 +82,10 @@ public class UserServiceImpl implements UserService {
             viewHelper.filterUserContent(user);
             return user;
         }
-        if (authUser.getBlockedUsers().contains(user)) {
+        if (isUserBlocked(authUser, user)) {
             return new User(username);
         }
-        if (user.getBlockedUsers().contains(authUser)) {
+        if (isUserBlocked(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
         viewHelper.filterUserContent(user, authUser);
@@ -121,7 +131,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Set<User> findBlocked(User authUser) {
         Set<User> blockedUsers = authUser.getBlockedUsers();
-        blockedUsers.removeIf(blockedUser -> !viewHelper.isUserViewable(blockedUser) || blockedUser.getBlockedUsers().contains(authUser));
+        blockedUsers.removeIf(blockedUser -> !viewHelper.isUserViewable(blockedUser) || isUserBlocked(blockedUser, authUser));
         return blockedUsers;
     }
 
@@ -135,7 +145,7 @@ public class UserServiceImpl implements UserService {
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot follow yourself!");
         }
-        if (user.getFollowers().contains(authUser)) {
+        if (isFollowingUser(authUser, user)) {
             throw new IllegalStateException("You already follow this user!");
         }
         userRepository.follow(user.getId(), authUser.getId());
@@ -151,7 +161,7 @@ public class UserServiceImpl implements UserService {
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot unfollow yourself!");
         }
-        if (!authUser.getFollowing().contains(user)) {
+        if (!isFollowingUser(authUser, user)) {
             throw new IllegalStateException("You aren't following this user!");
         }
         userRepository.unfollow(user.getId(), authUser.getId());
@@ -161,19 +171,19 @@ public class UserServiceImpl implements UserService {
     public void block(String username, String authUsername) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (!viewHelper.isUserViewable(user) || user.getBlockedUsers().contains(authUser)) {
+        if (!viewHelper.isUserViewable(user) || isUserBlocked(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot block yourself!");
         }
-        if (authUser.getBlockedUsers().contains(user)) {
+        if (isUserBlocked(authUser, user)) {
             throw new IllegalStateException("You already blocked this user!");
         }
-        if (user.getFollowers().contains(authUser)) {
+        if (isFollowingUser(authUser, user)) {
             userRepository.unfollow(user.getId(), authUser.getId());
         }
-        if (user.getFollowing().contains(authUser)) {
+        if (isFollowingUser(user, authUser)) {
             userRepository.unfollow(authUser.getId(), user.getId());
         }
         userRepository.block(user.getId(), authUser.getId());
@@ -183,13 +193,13 @@ public class UserServiceImpl implements UserService {
     public void unblock(String username, String authUsername) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         User authUser = userRepository.findByUsername(authUsername).orElseThrow(() -> new UserNotFoundException("Please log in again!"));
-        if (!viewHelper.isUserViewable(user) || user.getBlockedUsers().contains(authUser)) {
+        if (!viewHelper.isUserViewable(user) || isUserBlocked(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
         if (authUser.equals(user)) {
             throw new IllegalArgumentException("You cannot unblock yourself!");
         }
-        if (!authUser.getBlockedUsers().contains(user)) {
+        if (!isUserBlocked(authUser, user)) {
             throw new IllegalStateException("You haven't blocked this user!");
         }
         userRepository.unblock(user.getId(), authUser.getId());

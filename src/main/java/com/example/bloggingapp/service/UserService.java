@@ -20,7 +20,11 @@ public interface UserService {
 
     Boolean existsByEmailIgnoreCase(String email);
 
-    Boolean isBlockedByUsername(User authUser, String username);
+    Boolean isUsernameBlocked(User parent, String username);
+
+    Boolean isUserBlocked(User parent, User user);
+
+    Boolean isFollowingUser(User parent, User user);
 
     Set<User> findFollowers(String username, User authUser);
 
