@@ -22,6 +22,8 @@ export default function Post() {
     const [rating, setRating] = useState(post.rating);
     const [replyOpen, setReplyOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const canEdit = currentUser?.username === post.username;
 
     function openMenu(event) {
         setAnchorEl(event.currentTarget);
@@ -29,6 +31,11 @@ export default function Post() {
 
     function closeMenu() {
         setAnchorEl(null);
+    }
+
+    function handleEdit() {
+        closeMenu();
+        window.location.href = `/post/edit/${postURI}`;
     }
 
     function handleBlock() {
@@ -130,6 +137,7 @@ export default function Post() {
                     </IconButton>
                 </Toolbar>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                    {canEdit && <MenuItem onClick={handleEdit}>Edit</MenuItem>}
                     <MenuItem onClick={handleBlock}>Block user</MenuItem>
                 </Menu>
                 <Divider sx={{borderBottomWidth: 2}}/>
@@ -174,7 +182,7 @@ export default function Post() {
                 {replyOpen && <CommentReply parentPostId={post.id}/>}
                 <PreviewContainer>
                     {post.comments.map((comment) => (
-                        <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} depth={0}/>
+                        <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} isHiddenConst={comment.isHidden} depth={0}/>
                     ))}
                 </PreviewContainer>
             </Container>

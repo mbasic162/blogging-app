@@ -19,5 +19,6 @@ public interface PostMapper {
     @Mapping(target = "userLiked", source = "post", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "post", qualifiedByName = "userDisliked")
     @Mapping(target = "date", source = "post.createdAt", qualifiedByName = "localDateTimeToLocalDate")
+    @Mapping(target = "isHidden", source = "hidden")
     PostDto toDto(Post post, @Context User authUser);
 }

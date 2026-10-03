@@ -48,7 +48,7 @@ export default function Profile() {
                     window.dispatchEvent(new CustomEvent('successAlert', {
                         detail: 'User unblocked successfully'
                 }));
-            });            
+            });
         }
         else{
             axios.post("/user/block", {username: username})
@@ -131,7 +131,7 @@ export default function Profile() {
                         <TabPanel value="Comments">
                             <PreviewContainer>
                                 {comments.map((comment) => (
-                                    <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} depth={0}/>
+                                    <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} isHiddenConst={comment.isHidden} depth={0}/>
                                 ))}
                             </PreviewContainer>
                         </TabPanel>

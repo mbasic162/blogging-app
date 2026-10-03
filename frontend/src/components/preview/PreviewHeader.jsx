@@ -3,8 +3,10 @@ import {Avatar, Box, CardContent, IconButton, Menu, MenuItem, Typography} from "
 import MoreIcon from "@mui/icons-material/MoreVert";
 import axios from "axios";
 
-export default function PreviewHeader({username, profilePicture, date}) {
+export default function PreviewHeader({username, profilePicture, date, onEdit}) {
     const [anchorEl, setAnchorEl] = useState(null);
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const canEdit = onEdit && currentUser?.username === username;
 
     function openProfile() {
         window.location.href = `/${username}`;
@@ -16,6 +18,11 @@ export default function PreviewHeader({username, profilePicture, date}) {
 
     function closeMenu() {
         setAnchorEl(null);
+    }
+
+    function handleEdit() {
+        closeMenu();
+        onEdit();
     }
 
     function handleBlock() {
@@ -57,6 +64,7 @@ export default function PreviewHeader({username, profilePicture, date}) {
                 </IconButton>
             </Box>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                {canEdit && <MenuItem onClick={handleEdit}>Edit</MenuItem>}
                 <MenuItem onClick={handleBlock}>Block user</MenuItem>
             </Menu>
         </CardContent>

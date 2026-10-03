@@ -11,6 +11,7 @@ public record CommentDto(
         String profilePicture,
         Boolean userLiked,
         Boolean userDisliked,
+        Boolean isHidden,
         LocalDate date,
         Set<CommentDto> comments
 ) {

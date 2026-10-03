@@ -17,5 +17,6 @@ public interface CommentMapper {
     @Mapping(target = "date", source = "createdAt", qualifiedByName = "localDateTimeToLocalDate")
     @Mapping(target = "userLiked", source = "comment", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "comment", qualifiedByName = "userDisliked")
+    @Mapping(target = "isHidden", source = "hidden")
     CommentDto toDto(Comment comment, @Context User authUser);
 }

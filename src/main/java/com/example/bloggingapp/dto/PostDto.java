@@ -13,6 +13,7 @@ public record PostDto(
         Integer rating,
         Boolean userLiked,
         Boolean userDisliked,
+        Boolean isHidden,
         LocalDate date,
         Set<CommentDto> comments
 ) {

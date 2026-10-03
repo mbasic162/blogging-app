@@ -6,6 +6,7 @@ import Profile from './pages/Profile'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import CreatePost from './pages/CreatePost'
+import EditPost from './pages/EditPost'
 import EditProfile from './pages/EditProfile'
 import axios from 'axios'
 
@@ -41,6 +42,11 @@ export default function App() {
         {
             path: "/post/create",
             element: <CreatePost/>
+        },
+        {
+            path: "/post/edit/:postURI",
+            element: <EditPost/>,
+            loader: postLoader
         },
         {
             path: "/post/:postURI",

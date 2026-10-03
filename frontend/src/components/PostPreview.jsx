@@ -26,10 +26,13 @@ export default function PostPreview({id, title, rating, date, username, profileP
             window.dispatchEvent(new CustomEvent('infoAlert', {detail: 'Link copied to clipboard'}));
         });
     }
+    function handleEdit() {
+        window.location.href = "/post/edit/" + postURI()
+    }
     const formattedDate = new Date(date).toLocaleDateString();
     return (
         <Card sx={{marginTop: "5%", marginBottom: "5%", boxShadow: "2px 2px 1px #a7a7a7"}}>
-            <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate}/>
+            <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate} onEdit={handleEdit}/>
             <Divider sx={{borderBottomWidth: 2}}/>
             <PreviewBody body={title} openFullView={openFullView}/>
             <Divider sx={{borderBottomWidth: 2}}/>
