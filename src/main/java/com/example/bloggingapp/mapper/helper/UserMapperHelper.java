@@ -14,7 +14,7 @@ public class UserMapperHelper {
 
     @Named("isUserBlocked")
     public Boolean isUserBlocked(User user, @Context User authUser) {
-        return userService.isUserBlocked(authUser, user);
+        return userService.isUsernameBlocked(authUser, user.getUsername());
     }
 
     @Named("mapProfilePicture")

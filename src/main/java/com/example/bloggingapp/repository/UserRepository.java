@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -22,50 +23,53 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
 
-    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu.username=:username")
+    @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Set<User> search(String query);
+
+    @Query("SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu.username=:username")
     Boolean isUsernameBlocked(User parent, String username);
 
 
-    @Query(value = "SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu=:user")
+    @Query("SELECT CASE WHEN COUNT(bu) > 0 THEN true ELSE false END FROM User u JOIN u.blockedUsers bu WHERE u=:parent AND bu=:user")
     Boolean isUserBlocked(User parent, User user);
 
 
-    @Query(value = "SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM User u JOIN u.following f WHERE u=:parent AND f=:user")
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM User u JOIN u.following f WHERE u=:parent AND f=:user")
     Boolean isFollowingUser(User parent, User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.username=:new_username WHERE u=:user")
+    @Query("UPDATE User u SET u.username=:new_username WHERE u=:user")
     void changeUsername(User user, @Param("new_username") String newUsername);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.email=:new_email WHERE u=:user")
+    @Query("UPDATE User u SET u.email=:new_email WHERE u=:user")
     void changeEmail(User user, @Param("new_email") String newEmail);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.password=:new_password WHERE u=:user")
+    @Query("UPDATE User u SET u.password=:new_password WHERE u=:user")
     void changePassword(User user, @Param("new_password") String newPassword);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.description=:new_description WHERE u=:user")
+    @Query("UPDATE User u SET u.description=:new_description WHERE u=:user")
     void changeDescription(User user, @Param("new_description") String newDescription);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.profilePictureName=:new_profile_picture_name WHERE u=:user")
+    @Query("UPDATE User u SET u.profilePictureName=:new_profile_picture_name WHERE u=:user")
     void changeProfilePictureName(User user, @Param("new_profile_picture_name") String newProfilePictureName);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isPrivate=true WHERE u=:user")
+    @Query("UPDATE User u SET u.isPrivate=true WHERE u=:user")
     void goPrivate(User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isPrivate=false WHERE u=:user")
+    @Query("UPDATE User u SET u.isPrivate=false WHERE u=:user")
     void goPublic(User user);
 
     @Transactional
@@ -90,21 +94,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isDeleted = true WHERE u = :user")
+    @Query("UPDATE User u SET u.isDeleted = true WHERE u = :user")
     void tempDelete(User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isDeleted = false WHERE u = :user")
+    @Query("UPDATE User u SET u.isDeleted = false WHERE u = :user")
     void undelete(User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isEnabled = false WHERE u = :user")
+    @Query("UPDATE User u SET u.isEnabled = false WHERE u = :user")
     void disable(User user);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE User u SET u.isEnabled = true WHERE u = :user")
+    @Query("UPDATE User u SET u.isEnabled = true WHERE u = :user")
     void enable(User user);
 }

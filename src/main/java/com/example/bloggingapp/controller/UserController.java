@@ -54,6 +54,22 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(user, authUser));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Set<UserDto>> searchUsers(
+            @RequestParam(name = "s")
+            @NotBlank(message = "Search query cannot be blank!") String query,
+            Authentication authentication
+    ) {
+        User authUser;
+        if (authentication != null && authentication.isAuthenticated()) {
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        } else {
+            authUser = null;
+        }
+        Set<User> users = userService.search(query, authUser);
+        return ResponseEntity.ok(users.stream().map(user -> userMapper.toDto(user, authUser)).collect(Collectors.toSet()));
+    }
+
     @GetMapping("/{username}/posts")
     public ResponseEntity<Set<PostPreviewDto>> getPosts(
             @PathVariable

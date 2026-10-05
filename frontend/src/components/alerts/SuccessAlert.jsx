@@ -14,6 +14,12 @@ export default function SuccessAlert() {
             }, 5000)
         }
 
+        const pendingMessage = sessionStorage.getItem('pendingSuccessAlert')
+        if (pendingMessage) {
+            sessionStorage.removeItem('pendingSuccessAlert')
+            handleSuccess({detail: pendingMessage})
+        }
+
         window.addEventListener('successAlert', handleSuccess)
         return () => {
             window.removeEventListener('successAlert', handleSuccess)

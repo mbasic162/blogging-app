@@ -87,6 +87,20 @@ public class PostController {
         return ResponseEntity.ok(postMapper.toDto(post, authUser));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Set<PostPreviewDto>> searchPosts(
+            @RequestParam(name = "s")
+            @NotBlank(message = "Search query cannot be blank!") String query,
+            Authentication authentication
+    ) {
+        User authUser = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        }
+        Set<Post> posts = postService.search(query, authUser);
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
+    }
+
     @GetMapping("{post_uri}/comments")
     public ResponseEntity<Set<CommentDto>> comments(
             @PathVariable(name = "post_uri")

@@ -6,10 +6,11 @@ import com.example.bloggingapp.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {UserMapperHelper.class})
+@Mapper(componentModel = "spring", uses = {UserMapperHelper.class, UserFollowMapper.class})
 public interface UserLoginMapper {
 
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
     @Mapping(target = "token", source = "token")
+    @Mapping(target = "following", source = "user.following")
     UserLoginDto toDto(User user, String token);
 }

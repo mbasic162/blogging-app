@@ -23,6 +23,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.parentComment = :comment ORDER BY c.rating DESC")
     Set<Comment> findByParentComment(Comment comment);
 
+    @Query("SELECT c FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Set<Comment> search(String query);
+
     @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost= :post AND c.isDeleted = false AND c.isHidden = false AND c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true")
     Integer getViewableCommentCountByPost(Post post);
 
@@ -57,41 +60,41 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.rating = c.rating + :change WHERE c = :comment")
+    @Query("UPDATE Comment c SET c.rating = c.rating + :change WHERE c = :comment")
     void changeRating(Comment comment, @Param("change") int change);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeleted = true WHERE c = :comment")
+    @Query("UPDATE Comment c SET c.isDeleted = true WHERE c = :comment")
     void tempDelete(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeleted = false WHERE c = :comment")
+    @Query("UPDATE Comment c SET c.isDeleted = false WHERE c = :comment")
     void undelete(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isHidden = true WHERE c = :comment")
+    @Query("UPDATE Comment c SET c.isHidden = true WHERE c = :comment")
     void hide(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isHidden = false WHERE c = :comment")
+    @Query("UPDATE Comment c SET c.isHidden = false WHERE c = :comment")
     void unhide(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.content=:new_content WHERE c= :comment")
+    @Query("UPDATE Comment c SET c.content=:new_content WHERE c= :comment")
     void changeContent(Comment comment, @Param("new_content") String newContent);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeletedByAdmin= true WHERE c=:comment")
+    @Query("UPDATE Comment c SET c.isDeletedByAdmin= true WHERE c=:comment")
     void tempDeleteByAdmin(Comment comment);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Comment c SET c.isDeletedByAdmin= false WHERE c=:comment")
+    @Query("UPDATE Comment c SET c.isDeletedByAdmin= false WHERE c=:comment")
     void undeleteByAdmin(Comment comment);
 }

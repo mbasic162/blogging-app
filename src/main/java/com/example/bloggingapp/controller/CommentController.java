@@ -79,6 +79,22 @@ public class CommentController {
         return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Set<CommentDto>> search(
+            @RequestParam(name = "s")
+            @NotBlank(message = "Search query cannot be blank!") String query,
+            Authentication authentication
+    ) {
+        User authUser;
+        if (authentication != null && authentication.isAuthenticated()) {
+            authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
+        } else {
+            authUser = null;
+        }
+        Set<Comment> comments = commentService.search(query, authUser);
+        return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
+    }
+
     @PostMapping("/like")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> like(

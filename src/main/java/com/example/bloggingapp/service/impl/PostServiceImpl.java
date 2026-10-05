@@ -50,6 +50,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Set<Post> search(String query, User authUser) {
+        Set<Post> posts = postRepository.search(query);
+        if (authUser == null) {
+            viewHelper.filterPosts(posts);
+            return posts;
+        }
+        viewHelper.filterPosts(posts, authUser);
+        return posts;
+    }
+
+    @Override
     public Post save(Post post) {
         return postRepository.save(post);
     }

@@ -14,19 +14,23 @@ import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @Query(value = "SELECT p FROM Post p WHERE p.user=:user")
+    @Query("SELECT p FROM Post p WHERE p.user=:user")
     Set<Post> findByUser(User user);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
+    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
     Set<Post> findN(Limit n);
 
-    @Query(value = "SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
+    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
     Set<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
 
-    @Query(value = "SELECT CASE WHEN COUNT(pl) > 0 THEN true ELSE false END FROM Post p JOIN p.likedBy pl WHERE p=:post AND pl=:user")
+
+    @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Set<Post> search(String query);
+
+    @Query("SELECT CASE WHEN COUNT(pl) > 0 THEN true ELSE false END FROM Post p JOIN p.likedBy pl WHERE p=:post AND pl=:user")
     Boolean isLikedByUser(Post post, User user);
 
-    @Query(value = "SELECT CASE WHEN COUNT(pd) > 0 THEN true ELSE false END FROM Post p JOIN p.dislikedBy pd WHERE p=:post AND pd=:user")
+    @Query("SELECT CASE WHEN COUNT(pd) > 0 THEN true ELSE false END FROM Post p JOIN p.dislikedBy pd WHERE p=:post AND pd=:user")
     Boolean isDislikedByUser(Post post, User user);
 
     @Transactional
@@ -51,46 +55,46 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.rating = p.rating + :change WHERE p = :post")
+    @Query("UPDATE Post p SET p.rating = p.rating + :change WHERE p = :post")
     void changeRating(Post post, int change);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.title=:new_title WHERE p=:post")
+    @Query("UPDATE Post p SET p.title=:new_title WHERE p=:post")
     void changeTitle(Post post, @Param("new_title") String newTitle);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.content=:new_content WHERE p=:post")
+    @Query("UPDATE Post p SET p.content=:new_content WHERE p=:post")
     void changeContent(Post post, @Param("new_content") String newContent);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeleted = true WHERE p = :post")
+    @Query("UPDATE Post p SET p.isDeleted = true WHERE p = :post")
     void tempDelete(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeleted = false WHERE p = :post")
+    @Query("UPDATE Post p SET p.isDeleted = false WHERE p = :post")
     void undelete(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isHidden = true WHERE p = :post")
+    @Query("UPDATE Post p SET p.isHidden = true WHERE p = :post")
     void hide(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isHidden = false WHERE p = :post")
+    @Query("UPDATE Post p SET p.isHidden = false WHERE p = :post")
     void unhide(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeletedByAdmin = true WHERE p = :post")
+    @Query("UPDATE Post p SET p.isDeletedByAdmin = true WHERE p = :post")
     void tempDeleteByAdmin(Post post);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE Post p SET p.isDeletedByAdmin = false WHERE p = :post")
+    @Query("UPDATE Post p SET p.isDeletedByAdmin = false WHERE p = :post")
     void undeleteByAdmin(Post post);
 }

@@ -15,6 +15,8 @@ public interface PostService {
 
     Set<Post> findN(Integer numberOfPosts, User authUser);
 
+    Set<Post> search(String query, User authUser);
+
     String getURIByIdAndTitle(Long postId, String title);
 
     Long getIdByURI(String postURI);

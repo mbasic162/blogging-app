@@ -73,6 +73,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Set<User> search(String query, User authUser) {
+        Set<User> users = userRepository.search(query);
+        if (authUser == null) {
+            viewHelper.filterUsers(users);
+            return users;
+        }
+        viewHelper.filterUsers(users, authUser);
+        return users;
+    }
+
+    @Override
     public User getUserForViewByUsername(String username, User authUser) {
         User user = findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         if (!viewHelper.isUserViewable(user)) {

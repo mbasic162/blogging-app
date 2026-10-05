@@ -75,6 +75,18 @@ public class CommentServiceImpl implements CommentService {
         return comments;
     }
 
+
+    @Override
+    public Set<Comment> search(String query, User authUser) {
+        Set<Comment> comments = commentRepository.search(query);
+        if (authUser == null) {
+            viewHelper.filterComments(comments);
+            return comments;
+        }
+        viewHelper.filterComments(comments, authUser);
+        return comments;
+    }
+
     @Override
     public String getURIByIdAndContent(Long commentId, String content) {
         if (content.length() > 30 && content.charAt(30) != ' ') {

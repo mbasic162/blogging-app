@@ -12,6 +12,8 @@ public interface UserService {
 
     Optional<User> findByUsername(String username);
 
+    Set<User> search(String query, User authUser);
+
     User getUserForViewByUsername(String username, User authUser);
 
     User save(User user);
