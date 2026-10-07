@@ -5,6 +5,8 @@ import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
 import Menu from '@mui/material/Menu'
+import Select from '@mui/material/Select'
+import FormControl from '@mui/material/FormControl'
 import SearchIcon from '@mui/icons-material/Search'
 import { Avatar, TextField } from '@mui/material'
 import logo from '../assets/logo.svg'
@@ -15,6 +17,11 @@ export default function NavBar() {
         return storedUser ? JSON.parse(storedUser) : null
     })
     const [anchorEl, setAnchorEl] = useState(null)
+    const [searchType, setSearchType] = useState(() => {
+        const type = new URLSearchParams(window.location.search).get('type')
+        return ['users', 'posts', 'comments'].includes(type) ? type : 'posts'
+    })
+    const [searchQuery, setSearchQuery] = useState('')
 
     useEffect(() => {
         const handleLogout = () => setUser(null)
@@ -49,6 +56,19 @@ export default function NavBar() {
         window.location.href = '/edit-profile'
     }
 
+    function submitSearch() {
+        if (!searchQuery) {
+            return
+        }
+        window.location.assign(`/search?q=${encodeURIComponent(searchQuery)}&type=${searchType}`)
+    }
+
+    function handleSearchKeyDown(event) {
+        if (event.key === 'Enter') {
+            submitSearch()
+        }
+    }
+
     return (
         <Box>
             <AppBar position="fixed" sx={{backgroundColor: 'white', color: 'black', borderBottom: '1px solid #4F4F4F', boxShadow: 'none'}}>
@@ -58,8 +78,30 @@ export default function NavBar() {
                     </Box>
                     <Box sx={{flexGrow: 1}} />
                     <Box sx={{display: 'flex', alignItems: 'center', gap: 1, width: '70%', maxWidth: 500, padding: '8px', borderRadius: '4px'}}>
-                        <SearchIcon sx={{color: '#999'}} />
-                        <TextField variant="outlined" placeholder="Search..." size="small" sx={{flex: 1}} />
+                        <IconButton aria-label="Search" onClick={submitSearch} size="small">
+                            <SearchIcon sx={{color: '#999'}} />
+                        </IconButton>
+                        <TextField
+                            variant="outlined"
+                            placeholder="Search..."
+                            size="small"
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                            onKeyDown={handleSearchKeyDown}
+                            sx={{flex: 1}}
+                        />
+                        <FormControl size="small">
+                            <Select
+                                value={searchType}
+                                onChange={(event) => setSearchType(event.target.value)}
+                                aria-label="Search type"
+                                variant="standard"
+                            >
+                                <MenuItem value="users">Users</MenuItem>
+                                <MenuItem value="posts">Posts</MenuItem>
+                                <MenuItem value="comments">Comments</MenuItem>
+                            </Select>
+                        </FormControl>
                     </Box>
                     <Box sx={{flexGrow: 1}} />
                     <IconButton size="large" edge="end" onClick={openMenu} color="inherit">

@@ -35,7 +35,7 @@ export default function Post() {
 
     function handleEdit() {
         closeMenu();
-        window.location.href = `/post/edit/${postURI}`;
+        window.location.assign(`/post/edit/${postURI}`);
     }
 
     function handleBlock() {
@@ -108,7 +108,7 @@ export default function Post() {
     }
 
     function openProfile() {
-        window.location.href = `/${post.username}`;
+        window.location.assign(`/${post.username}`);
     }
 
     return (

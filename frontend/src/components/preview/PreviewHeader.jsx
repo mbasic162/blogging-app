@@ -9,7 +9,7 @@ export default function PreviewHeader({username, profilePicture, date, onEdit}) 
     const canEdit = onEdit && currentUser?.username === username;
 
     function openProfile() {
-        window.location.href = `/${username}`;
+        window.location.assign(`/${username}`);
     }
 
     function openMenu(event) {

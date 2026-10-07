@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import CreatePost from './pages/CreatePost'
 import EditPost from './pages/EditPost'
 import EditProfile from './pages/EditProfile'
+import SearchResults from './pages/SearchResults'
 import axios from 'axios'
 
 
@@ -34,6 +35,10 @@ export default function App() {
         {
             path: "/",
             element: <Home/>
+        },
+        {
+            path: "/search",
+            element: <SearchResults/>
         },
         {
             path: "/edit-profile",
