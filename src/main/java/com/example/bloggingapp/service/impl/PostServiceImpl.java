@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -66,8 +67,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> findN(Integer numberOfPosts, User authUser) {
-        Set<Post> posts;
+    public List<Post> findN(Integer numberOfPosts, User authUser) {
+        List<Post> posts;
         if (authUser == null) {
             posts = postRepository.findN(Limit.of(numberOfPosts));
             return posts;

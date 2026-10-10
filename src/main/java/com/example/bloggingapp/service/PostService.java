@@ -3,6 +3,7 @@ package com.example.bloggingapp.service;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public interface PostService {
 
     Post save(Post post);
 
-    Set<Post> findN(Integer numberOfPosts, User authUser);
+    List<Post> findN(Integer numberOfPosts, User authUser);
 
     Set<Post> search(String query, User authUser);
 

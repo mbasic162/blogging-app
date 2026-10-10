@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class PostController {
     private final CommentMapper commentMapper;
 
     @GetMapping("")
-    public ResponseEntity<Set<PostPreviewDto>> getNPosts(
+    public ResponseEntity<List<PostPreviewDto>> getNPosts(
             Authentication authentication
     ) {
         User authUser = null;
@@ -50,8 +51,8 @@ public class PostController {
             authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
         Integer numberOfPosts = 10;
-        Set<Post> posts = postService.findN(numberOfPosts, authUser);
-        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
+        List<Post> posts = postService.findN(numberOfPosts, authUser);
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).toList());
     }
 
     @PostMapping("/create")

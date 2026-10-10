@@ -10,19 +10,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    @Query("SELECT p FROM Post p WHERE p.user=:user")
+
     Set<Post> findByUser(User user);
 
-    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC")
-    Set<Post> findN(Limit n);
+    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC, p.createdAt DESC")
+    List<Post> findN(Limit n);
 
-    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC")
-    Set<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
-
+    @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC, p.createdAt DESC")
+    List<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
 
     @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%'))")
     Set<Post> search(String query);
