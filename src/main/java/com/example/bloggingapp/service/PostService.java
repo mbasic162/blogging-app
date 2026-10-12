@@ -2,6 +2,7 @@ package com.example.bloggingapp.service;
 
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +15,9 @@ public interface PostService {
 
     Post save(Post post);
 
-    List<Post> findN(Integer numberOfPosts, User authUser);
+    List<Post> findN(Pageable pageable, User authUser);
 
-    Set<Post> search(String query, User authUser);
+    List<Post> search(Pageable pageable, String query, User authUser);
 
     String getURIByIdAndTitle(Long postId, String title);
 

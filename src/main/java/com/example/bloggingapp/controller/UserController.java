@@ -16,6 +16,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,10 +56,12 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(user, authUser));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Set<UserDto>> searchUsers(
+    @PostMapping("/search")
+    public ResponseEntity<List<UserDto>> searchUsers(
             @RequestParam(name = "s")
             @NotBlank(message = "Search query cannot be blank!") String query,
+            @RequestParam(name = "numberOfUsers", required = false, defaultValue = "20") int numberOfUsers,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
             Authentication authentication
     ) {
         User authUser;
@@ -66,8 +70,8 @@ public class UserController {
         } else {
             authUser = null;
         }
-        Set<User> users = userService.search(query, authUser);
-        return ResponseEntity.ok(users.stream().map(user -> userMapper.toDto(user, authUser)).collect(Collectors.toSet()));
+        List<User> users = userService.search(Pageable.ofSize(numberOfUsers).withPage(page), query, authUser);
+        return ResponseEntity.ok(users.stream().map(user -> userMapper.toDto(user, authUser)).toList());
     }
 
     @GetMapping("/{username}/posts")

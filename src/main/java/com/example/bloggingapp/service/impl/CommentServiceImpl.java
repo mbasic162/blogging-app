@@ -15,8 +15,10 @@ import com.example.bloggingapp.service.helper.ViewHelper;
 import com.example.bloggingapp.utils.UriSanitizer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -77,8 +79,8 @@ public class CommentServiceImpl implements CommentService {
 
 
     @Override
-    public Set<Comment> search(String query, User authUser) {
-        Set<Comment> comments = commentRepository.search(query);
+    public List<Comment> search(Pageable pageable, String query, User authUser) {
+        List<Comment> comments = commentRepository.search(pageable, query);
         if (authUser == null) {
             viewHelper.filterComments(comments);
             return comments;
@@ -158,14 +160,6 @@ public class CommentServiceImpl implements CommentService {
 
     public Optional<Comment> findById(Long commentId) {
         return commentRepository.findById(commentId);
-    }
-
-    @Override
-    public Integer getViewableCommentCountByPost(Post post, User authUser) {
-        if (authUser == null) {
-            return commentRepository.getViewableCommentCountByPost(post);
-        }
-        return commentRepository.getViewableCommentCountByPostAuth(post, authUser);
     }
 
     @Override

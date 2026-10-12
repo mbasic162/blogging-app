@@ -12,7 +12,7 @@ import com.example.bloggingapp.service.helper.ViewHelper;
 import com.example.bloggingapp.utils.UriSanitizer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,8 +51,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Set<Post> search(String query, User authUser) {
-        Set<Post> posts = postRepository.search(query);
+    public List<Post> search(Pageable pageable, String query, User authUser) {
+        List<Post> posts = postRepository.search(pageable, query);
         if (authUser == null) {
             viewHelper.filterPosts(posts);
             return posts;
@@ -67,13 +67,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<Post> findN(Integer numberOfPosts, User authUser) {
+    public List<Post> findN(Pageable pageable, User authUser) {
         List<Post> posts;
         if (authUser == null) {
-            posts = postRepository.findN(Limit.of(numberOfPosts));
+            posts = postRepository.findN(pageable);
             return posts;
         }
-        posts = postRepository.findNAuth(Limit.of(numberOfPosts), authUser);
+        posts = postRepository.findNAuth(pageable, authUser);
         return posts;
     }
 

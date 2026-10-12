@@ -19,6 +19,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,16 +43,17 @@ public class PostController {
     private final PostPreviewMapper postPreviewMapper;
     private final CommentMapper commentMapper;
 
-    @GetMapping("")
+    @PostMapping("")
     public ResponseEntity<List<PostPreviewDto>> getNPosts(
-            Authentication authentication
+            Authentication authentication,
+            @RequestParam(name = "numberOfPosts", required = false, defaultValue = "10") Integer numberOfPosts,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page
     ) {
         User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
             authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Integer numberOfPosts = 10;
-        List<Post> posts = postService.findN(numberOfPosts, authUser);
+        List<Post> posts = postService.findN(Pageable.ofSize(numberOfPosts).withPage(page), authUser);
         return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).toList());
     }
 
@@ -88,18 +90,20 @@ public class PostController {
         return ResponseEntity.ok(postMapper.toDto(post, authUser));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Set<PostPreviewDto>> searchPosts(
+    @PostMapping("/search")
+    public ResponseEntity<List<PostPreviewDto>> searchPosts(
             @RequestParam(name = "s")
             @NotBlank(message = "Search query cannot be blank!") String query,
+            @RequestParam(name = "numberOfPosts", required = false, defaultValue = "10") int numberOfPosts,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
             Authentication authentication
     ) {
         User authUser = null;
         if (authentication != null && authentication.isAuthenticated()) {
             authUser = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
         }
-        Set<Post> posts = postService.search(query, authUser);
-        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).collect(Collectors.toSet()));
+        List<Post> posts = postService.search(Pageable.ofSize(numberOfPosts).withPage(page), query, authUser);
+        return ResponseEntity.ok(posts.stream().map(postPreviewMapper::toDto).toList());
     }
 
     @GetMapping("{post_uri}/comments")

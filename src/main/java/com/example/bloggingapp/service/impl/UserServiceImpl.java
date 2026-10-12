@@ -12,6 +12,7 @@ import com.example.bloggingapp.service.ImageService;
 import com.example.bloggingapp.service.UserService;
 import com.example.bloggingapp.service.helper.ViewHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -73,8 +75,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Set<User> search(String query, User authUser) {
-        Set<User> users = userRepository.search(query);
+    public List<User> search(Pageable pageable, String query, User authUser) {
+        List<User> users = userRepository.search(pageable, query);
         if (authUser == null) {
             viewHelper.filterUsers(users);
             return users;

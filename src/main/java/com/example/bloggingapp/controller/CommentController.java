@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,10 +81,12 @@ public class CommentController {
         return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<Set<CommentDto>> search(
             @RequestParam(name = "s")
             @NotBlank(message = "Search query cannot be blank!") String query,
+            @RequestParam(name = "numberOfComments", required = false, defaultValue = "10") int numberOfComments,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
             Authentication authentication
     ) {
         User authUser;
@@ -91,7 +95,7 @@ public class CommentController {
         } else {
             authUser = null;
         }
-        Set<Comment> comments = commentService.search(query, authUser);
+        List<Comment> comments = commentService.search(Pageable.ofSize(numberOfComments).withPage(page), query, authUser);
         return ResponseEntity.ok(comments.stream().map(comment -> commentMapper.toDto(comment, authUser)).collect(Collectors.toSet()));
     }
 

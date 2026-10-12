@@ -2,9 +2,10 @@ package com.example.bloggingapp.service;
 
 import com.example.bloggingapp.dto.request.CreateCommentRequest;
 import com.example.bloggingapp.model.Comment;
-import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public interface CommentService {
 
     Comment create(CreateCommentRequest request, User authUser);
 
-    Set<Comment> search(String query, User authUser);
+    List<Comment> search(Pageable pageable, String query, User authUser);
 
     Set<Comment> findByUser(User user, User authUser);
 
@@ -30,8 +31,6 @@ public interface CommentService {
     String getURIByIdAndContent(Long commentId, String content);
 
     Long getIdByURI(String url);
-
-    Integer getViewableCommentCountByPost(Post post, User authUser);
 
     Boolean isLikedByUser(Comment comment, User user);
 

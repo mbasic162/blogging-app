@@ -104,7 +104,9 @@ public class PostTests {
     @Order(3)
     @Transactional
     public void getNPosts_ShouldReturnPostPreviewDtos() throws Exception {
-        MvcResult result = mockMvc.perform(get("/post"))
+        MvcResult result = mockMvc.perform(post("/post")
+                        .param("numberOfPosts", "10")
+                        .param("page", "0"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -118,7 +120,9 @@ public class PostTests {
     @Transactional
     @WithMockUser("new_user")
     public void getNPosts_AsNewUser_ShouldReturnPostPreviewDtos() throws Exception {
-        MvcResult result = mockMvc.perform(get("/post"))
+        MvcResult result = mockMvc.perform(post("/post")
+                        .param("numberOfPosts", "10")
+                        .param("page", "0"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();

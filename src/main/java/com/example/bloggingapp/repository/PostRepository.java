@@ -3,7 +3,7 @@ package com.example.bloggingapp.repository;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,13 +19,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Set<Post> findByUser(User user);
 
     @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true ORDER BY p.rating DESC, p.createdAt DESC")
-    List<Post> findN(Limit n);
+    List<Post> findN(Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND p.isHidden = false AND p.isDeletedByAdmin=false AND p.user.isPrivate = false AND p.user.isEnabled = true AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=p.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=p.user) ORDER BY p.rating DESC, p.createdAt DESC")
-    List<Post> findNAuth(Limit n, @Param("auth_user") User authUser);
+    List<Post> findNAuth(Pageable pageable, @Param("auth_user") User authUser);
 
     @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%'))")
-    Set<Post> search(String query);
+    List<Post> search(Pageable pageable, String query);
 
     @Query("SELECT CASE WHEN COUNT(pl) > 0 THEN true ELSE false END FROM Post p JOIN p.likedBy pl WHERE p=:post AND pl=:user")
     Boolean isLikedByUser(Post post, User user);

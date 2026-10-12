@@ -7,6 +7,7 @@ import com.example.bloggingapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ public class ViewHelper {
         return (user.equals(authUser) || !comment.getHidden() && !comment.getDeleted() && !comment.getDeletedByAdmin()) && isUserViewable(user, authUser) && isPostViewable(comment.getParentPost(), authUser);
     }
 
-    public void filterComments(Set<Comment> comments) {
+    public void filterComments(Collection<Comment> comments) {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
             if (!isCommentViewable(comment)) {
@@ -61,7 +62,7 @@ public class ViewHelper {
         }
     }
 
-    public void filterComments(Set<Comment> comments, User authUser) {
+    public void filterComments(Collection<Comment> comments, User authUser) {
         for (Iterator<Comment> i = comments.iterator(); i.hasNext(); ) {
             Comment comment = i.next();
             if (!isCommentViewable(comment, authUser)) {
@@ -72,11 +73,11 @@ public class ViewHelper {
         }
     }
 
-    public void filterPosts(Set<Post> posts) {
+    public void filterPosts(Collection<Post> posts) {
         posts.removeIf(post -> !isPostViewable(post));
     }
 
-    public void filterPosts(Set<Post> posts, User authUser) {
+    public void filterPosts(Collection<Post> posts, User authUser) {
         posts.removeIf(post -> !isPostViewable(post, authUser));
     }
 
@@ -92,11 +93,11 @@ public class ViewHelper {
         post.setComments(comments);
     }
 
-    public void filterUsers(Set<User> users) {
+    public void filterUsers(Collection<User> users) {
         users.removeIf(user -> !isUserViewable(user));
     }
 
-    public void filterUsers(Set<User> users, User authUser) {
+    public void filterUsers(Collection<User> users, User authUser) {
         users.removeIf(user -> !isUserViewable(user, authUser));
     }
 

@@ -3,8 +3,10 @@ package com.example.bloggingapp.service;
 import com.example.bloggingapp.dto.request.EmailChangeRequest;
 import com.example.bloggingapp.dto.request.PasswordChangeRequest;
 import com.example.bloggingapp.model.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,7 +14,7 @@ public interface UserService {
 
     Optional<User> findByUsername(String username);
 
-    Set<User> search(String query, User authUser);
+    List<User> search(Pageable pageable, String query, User authUser);
 
     User getUserForViewByUsername(String username, User authUser);
 

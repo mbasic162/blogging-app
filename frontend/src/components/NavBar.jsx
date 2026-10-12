@@ -19,7 +19,10 @@ export default function NavBar() {
     const [anchorEl, setAnchorEl] = useState(null)
     const [searchType, setSearchType] = useState(() => {
         const type = new URLSearchParams(window.location.search).get('type')
-        return ['users', 'posts', 'comments'].includes(type) ? type : 'posts'
+        if(['users', 'posts', 'comments'].includes(type)) {
+            return type
+        }
+        return 'posts'
     })
     const [searchQuery, setSearchQuery] = useState('')
 
@@ -95,7 +98,7 @@ export default function NavBar() {
                                 value={searchType}
                                 onChange={(event) => setSearchType(event.target.value)}
                                 aria-label="Search type"
-                                variant="standard"
+                                variant="outlined"
                             >
                                 <MenuItem value="users">Users</MenuItem>
                                 <MenuItem value="posts">Posts</MenuItem>

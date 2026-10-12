@@ -4,12 +4,14 @@ import com.example.bloggingapp.model.Comment;
 import com.example.bloggingapp.model.Post;
 import com.example.bloggingapp.model.User;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -23,13 +25,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Set<Comment> findByParentComment(Comment comment);
 
     @Query("SELECT c FROM Comment c WHERE LOWER(c.content) LIKE LOWER(CONCAT('%', :query, '%'))")
-    Set<Comment> search(String query);
-
-    @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost= :post AND c.isDeleted = false AND c.isHidden = false AND c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true")
-    Integer getViewableCommentCountByPost(Post post);
-
-    @Query("SELECT COUNT(*) FROM Comment c WHERE c.parentPost=:post AND c.isDeleted = false AND c.isHidden = false AND (c.isDeletedByAdmin=false AND c.user.isPrivate = false AND c.user.isDeleted=false AND c.user.isEnabled = true OR c.user=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u JOIN u.blockedUsers bu WHERE u=c.user AND bu=:auth_user) AND NOT EXISTS ( SELECT 1 FROM User u2 JOIN u2.blockedUsers bu2 WHERE u2=:auth_user AND bu2=c.user)")
-    Integer getViewableCommentCountByPostAuth(Post post, @Param("auth_user") User authUser);
+    List<Comment> search(Pageable pageable, String query);
 
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Comment c JOIN c.likedBy u WHERE c = :comment AND u = :user")
     Boolean isLikedByUser(Comment comment, User user);
