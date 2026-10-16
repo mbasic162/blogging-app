@@ -113,13 +113,13 @@ public class UserServiceImpl implements UserService {
             if (!viewHelper.isUserViewable(user)) {
                 throw new UserNotFoundException("User not found!");
             }
-            followers.removeIf(follower -> !viewHelper.isUserViewable(follower));
+            viewHelper.filterUsers(followers);
             return followers;
         }
         if (!viewHelper.isUserViewable(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
-        followers.removeIf(follower -> !viewHelper.isUserViewable(follower, authUser));
+        viewHelper.filterUsers(followers, authUser);
         return followers;
     }
 
@@ -131,13 +131,13 @@ public class UserServiceImpl implements UserService {
             if (!viewHelper.isUserViewable(user)) {
                 throw new UserNotFoundException("User not found!");
             }
-            following.removeIf(follower -> !viewHelper.isUserViewable(follower));
+            viewHelper.filterUsers(following);
             return following;
         }
         if (!viewHelper.isUserViewable(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
-        following.removeIf(follower -> !viewHelper.isUserViewable(follower, authUser));
+        viewHelper.filterUsers(following, authUser);
         return following;
     }
 
@@ -220,7 +220,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String changeUsername(String newUsername, String authUsername) {
-        if (authUsername.equals(newUsername)) {
+        if (authUsername.equalsIgnoreCase(newUsername)) {
             throw new IllegalArgumentException("New username must be different from the old one!");
         }
         if (userRepository.existsByUsernameIgnoreCase(newUsername)) {

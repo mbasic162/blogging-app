@@ -5,6 +5,7 @@ import com.example.bloggingapp.dto.request.RegisterRequest;
 import com.example.bloggingapp.enums.ErrorField;
 import com.example.bloggingapp.exception.FormException;
 import com.example.bloggingapp.model.User;
+import com.example.bloggingapp.repository.UserRepository;
 import com.example.bloggingapp.security.JwtUtils;
 import com.example.bloggingapp.service.AuthService;
 import com.example.bloggingapp.service.ImageService;
@@ -22,6 +23,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authManager;
+    private final UserRepository userRepository;
     private final UserService userService;
     private final ImageService imageService;
 
@@ -36,10 +38,7 @@ public class AuthServiceImpl implements AuthService {
         if (userService.existsByEmailIgnoreCase(email)) {
             throw new FormException(ErrorField.EMAIL.getFieldName(), "Email is already in use");
         }
-        String description = registerRequest.description();
-        if (description == null) {
-            description = "";
-        }
+        String description = registerRequest.description() != null ? registerRequest.description() : "";
         MultipartFile profilePicture = registerRequest.profilePicture();
         String profilePictureName = null;
         if (profilePicture != null) {
@@ -61,8 +60,7 @@ public class AuthServiceImpl implements AuthService {
     public String login(LoginRequest loginRequest, User user) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
         if (user.getDeleted()) {
-            user.setDeleted(false);
-            userService.save(user);
+            userRepository.undelete(user);
         }
         return jwtUtils.generateToken(user.getUsername(), user.getRoles());
     }

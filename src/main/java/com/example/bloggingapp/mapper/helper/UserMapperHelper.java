@@ -14,6 +14,7 @@ public class UserMapperHelper {
 
     @Named("isUserBlocked")
     public Boolean isUserBlocked(User user, @Context User authUser) {
+        // User isn't fully resolved if blocked, only has username
         return userService.isUsernameBlocked(authUser, user.getUsername());
     }
 

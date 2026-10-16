@@ -12,7 +12,7 @@ public class UriSanitizer {
                 sb.deleteCharAt(sb.length() - 1);
             }
         }
-        return sb.toString().replaceAll(" ", "-");
+        return sb.toString().replace(" ", "-");
     }
 
     private static boolean isAllowedChar(char c) {
