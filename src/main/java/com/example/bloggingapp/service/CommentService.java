@@ -10,9 +10,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface CommentService {
-    Comment save(Comment comment);
+    void save(Comment comment);
 
-    Comment create(CreateCommentRequest request, User authUser);
+    void create(CreateCommentRequest request, User authUser);
 
     List<Comment> search(Pageable pageable, String query, User authUser);
 
@@ -27,6 +27,8 @@ public interface CommentService {
     boolean existsByURI(String commentURI);
 
     Optional<Comment> findById(Long commentId);
+
+    Optional<Comment> findByURI(String commentURI);
 
     String getURIByIdAndContent(Long commentId, String content);
 

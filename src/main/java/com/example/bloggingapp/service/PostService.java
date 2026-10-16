@@ -13,7 +13,9 @@ public interface PostService {
 
     Optional<Post> findById(Long id);
 
-    Post save(Post post);
+    Optional<Post> findByURI(String postURI);
+
+    void save(Post post);
 
     List<Post> findN(Pageable pageable, User authUser);
 

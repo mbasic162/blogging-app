@@ -59,13 +59,13 @@ public class PostController {
 
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PostDto> createPost(
+    public ResponseEntity<Void> createPost(
             Authentication authentication,
             @RequestBody @Valid CreatePostRequest request
     ) {
         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        Post post = postService.save(new Post(request.title(), request.content(), user, request.isHidden()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(post, post.getUser()));
+        postService.save(new Post(request.title(), request.content(), user, request.isHidden()));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/uri")

@@ -36,13 +36,13 @@ public class CommentController {
 
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<CommentDto> createComment(
+    public ResponseEntity<Void> createComment(
             @RequestBody @Valid CreateCommentRequest request,
             Authentication authentication
     ) {
         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new UserNotFoundException("User not found!"));
-        Comment comment = commentService.create(request, user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toDto(comment, user));
+        commentService.create(request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/uri")

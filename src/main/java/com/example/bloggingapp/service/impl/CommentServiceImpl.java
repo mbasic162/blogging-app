@@ -31,12 +31,12 @@ public class CommentServiceImpl implements CommentService {
     private final ViewHelper viewHelper;
 
     @Override
-    public Comment save(Comment comment) {
-        return commentRepository.save(comment);
+    public void save(Comment comment) {
+        commentRepository.save(comment);
     }
 
     @Override
-    public Comment create(CreateCommentRequest request, User authUser) {
+    public void create(CreateCommentRequest request, User authUser) {
         Comment comment;
         if (request.parentPostId() == null && request.parentCommentId() == null) {
             throw new IllegalArgumentException("Either parent post or parent comment must be provided!");
@@ -57,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
             }
             comment = new Comment(request.content(), authUser, parentComment.getParentPost(), parentComment);
         }
-        return save(comment);
+        save(comment);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Set<Comment> findByParentPost(String postURI, User authUser) {
-        Post post = postService.findById(postService.getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        Post post = postService.findByURI(postURI).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         Set<Comment> comments = commentRepository.findByParentPost(post);
         if (authUser == null) {
             if (!viewHelper.isPostViewable(post)) {
@@ -127,7 +127,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Set<Comment> findByParentComment(String commentURI, User authUser) {
-        Comment parentComment = findById(getIdByURI(commentURI)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        Comment parentComment = findByURI(commentURI).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         Set<Comment> comments = commentRepository.findByParentComment(parentComment);
         if (authUser == null) {
             if (!viewHelper.isCommentViewable(parentComment)) {
@@ -145,7 +145,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment getCommentForViewByURI(String commentURI, User authUser) {
-        Comment comment = findById(getIdByURI(commentURI)).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
+        Comment comment = findByURI(commentURI).orElseThrow(() -> new CommentNotFoundException("Comment not found!"));
         if (authUser == null) {
             if (!viewHelper.isCommentViewable(comment)) {
                 throw new CommentNotFoundException("Comment not found!");
@@ -158,8 +158,14 @@ public class CommentServiceImpl implements CommentService {
         return comment;
     }
 
+    @Override
     public Optional<Comment> findById(Long commentId) {
         return commentRepository.findById(commentId);
+    }
+
+    @Override
+    public Optional<Comment> findByURI(String commentURI) {
+        return commentRepository.findById(getIdByURI(commentURI));
     }
 
     @Override
@@ -330,6 +336,9 @@ public class CommentServiceImpl implements CommentService {
         }
         if (!comment.getUser().equals(authUser)) {
             throw new IllegalStateException("You can only change your own comments!");
+        }
+        if (comment.getDeleted() || comment.getDeletedByAdmin()) {
+            throw new IllegalStateException("This comment is deleted!");
         }
         if (comment.getContent().equals(newContent)) {
             throw new IllegalArgumentException("New content must be different from the old one!");

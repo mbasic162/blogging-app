@@ -33,6 +33,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public Optional<Post> findByURI(String postURI) {
+        return postRepository.findById(getIdByURI(postURI));
+    }
+
+    @Override
     public Set<Post> findByUsername(String username, User authUser) {
         User user = userService.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found!"));
         Set<Post> posts = postRepository.findByUser(user);
@@ -40,13 +45,13 @@ public class PostServiceImpl implements PostService {
             if (!viewHelper.isUserViewable(user)) {
                 throw new UserNotFoundException("User not found!");
             }
-            posts.removeIf(post -> !viewHelper.isPostViewable(post));
+            viewHelper.filterPosts(posts);
             return posts;
         }
         if (!viewHelper.isUserViewable(user, authUser)) {
             throw new UserNotFoundException("User not found!");
         }
-        posts.removeIf(post -> !viewHelper.isPostViewable(post, authUser));
+        viewHelper.filterPosts(posts, authUser);
         return posts;
     }
 
@@ -62,8 +67,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post save(Post post) {
-        return postRepository.save(post);
+    public void save(Post post) {
+        postRepository.save(post);
     }
 
     @Override
@@ -97,7 +102,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post getPostForViewByURI(String postURI, User authUser) {
-        Post post = findById(getIdByURI(postURI)).orElseThrow(() -> new PostNotFoundException("Post not found!"));
+        Post post = findByURI(postURI).orElseThrow(() -> new PostNotFoundException("Post not found!"));
         post.setComments(commentRepository.findByParentPost(post));
         if (authUser == null) {
             if (!viewHelper.isPostViewable(post)) {
