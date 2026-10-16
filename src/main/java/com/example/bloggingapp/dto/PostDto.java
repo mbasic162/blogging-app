@@ -14,6 +14,7 @@ public record PostDto(
         Boolean userLiked,
         Boolean userDisliked,
         Boolean isHidden,
+        Boolean isDeleted,
         LocalDate date,
         Set<CommentDto> comments
 ) {

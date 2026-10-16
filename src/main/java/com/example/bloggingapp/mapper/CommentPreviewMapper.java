@@ -17,5 +17,7 @@ public interface CommentPreviewMapper {
     @Mapping(target = "date", source = "createdAt", qualifiedByName = "localDateTimeToLocalDate")
     @Mapping(target = "userLiked", source = "comment", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "comment", qualifiedByName = "userDisliked")
+    @Mapping(target = "isHidden", source = "hidden")
+    @Mapping(target = "isDeleted", source = "deleted")
     CommentPreviewDto toDto(Comment comment, @Context User authUser);
 }

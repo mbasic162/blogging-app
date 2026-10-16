@@ -18,5 +18,6 @@ public interface CommentMapper {
     @Mapping(target = "userLiked", source = "comment", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "comment", qualifiedByName = "userDisliked")
     @Mapping(target = "isHidden", source = "hidden")
+    @Mapping(target = "isDeleted", source = "deleted")
     CommentDto toDto(Comment comment, @Context User authUser);
 }

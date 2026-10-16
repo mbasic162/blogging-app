@@ -12,13 +12,12 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UserMapperHelper.class, PostMapperHelper.class, CommentMapper.class, GeneralMapperHelper.class})
 public interface PostMapper {
-    @Mapping(target = "id", source = "post.id")
     @Mapping(target = "username", source = "post.user.username")
-    @Mapping(target = "comments", source = "post.comments")
     @Mapping(target = "profilePicture", source = "post.user", qualifiedByName = "mapProfilePicture")
     @Mapping(target = "userLiked", source = "post", qualifiedByName = "userLiked")
     @Mapping(target = "userDisliked", source = "post", qualifiedByName = "userDisliked")
     @Mapping(target = "date", source = "post.createdAt", qualifiedByName = "localDateTimeToLocalDate")
     @Mapping(target = "isHidden", source = "hidden")
+    @Mapping(target = "isDeleted", source = "deleted")
     PostDto toDto(Post post, @Context User authUser);
 }

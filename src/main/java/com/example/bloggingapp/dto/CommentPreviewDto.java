@@ -10,6 +10,8 @@ public record CommentPreviewDto(
         String profilePicture,
         Boolean userLiked,
         Boolean userDisliked,
+        Boolean isHidden,
+        Boolean isDeleted,
         LocalDate date
 ) {
 }
