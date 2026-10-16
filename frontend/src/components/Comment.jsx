@@ -12,14 +12,15 @@ import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
 import { useState } from "react";
 import axios from "axios";
 
-export default function Comment({id, content, ratingConst, comments = [],date, username, profilePicture, userLikedConst, userDislikedConst, isHiddenConst = false, depth = 0}) {
-    const formattedDate = new Date(date).toLocaleDateString();
+export default function Comment({id, content, ratingConst, comments = [],date, username, profilePicture, userLikedConst, userDislikedConst, isHiddenConst = false, isDeletedConst = false, depth = 0}) {
     const visualDepth = Math.min(depth, 5);
     const [userLiked, setUserLiked] = useState(userLikedConst);
     const [userDisliked, setUserDisliked] = useState(userDislikedConst);
     const [rating, setRating] = useState(ratingConst);
     const [replyOpen, setReplyOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
+    const [isHidden] = useState(isHiddenConst);
+    const [isDeleted] = useState(isDeletedConst);
 
     const commentURI = () => {
         if (content.length > 30 && content[30] !== ' ') {
@@ -86,13 +87,33 @@ export default function Comment({id, content, ratingConst, comments = [],date, u
         });
     }
 
+    function permanentlyDelete() {
+        if (!window.confirm("Permanently delete this comment?")) return;
+        axios.post('/comment/permanentlyDelete', {commentURI: commentURI()})
+            .then(() => window.location.reload())
+            .catch(() => {
+                window.dispatchEvent(new CustomEvent('errorAlert', {detail: 'Unable to permanently delete comment'}));
+            });
+    }
+
     return (
         <>
             <Box sx={{ ml: visualDepth === 0 ? 0 : { xs: 1, sm: 3 }, pl: visualDepth === 0 ? 0 : { xs: 1, sm: 2 }, borderLeft: visualDepth === 0 ? "none" : "3px solid", borderColor: "#6f6f6f"}}>
                 <Card sx={{marginTop: "5%", marginBottom: "20px", boxShadow: "2px 2px 1px #a7a7a7"}}>
-                    <PreviewHeader username={username} profilePicture={profilePicture} date={formattedDate} onEdit={() => setEditOpen(!editOpen)}/>
+                    <PreviewHeader
+                        username={username}
+                        profilePicture={profilePicture}
+                        date={date}
+                        onEdit={() => setEditOpen(!editOpen)}
+                    />
                     <Divider sx={{borderBottomWidth: 2}}/>
-                    {editOpen ? <CommentReply editCommentURI={commentURI()} initialContent={content} initialIsHidden={isHiddenConst}/> : <PreviewBody body={content}/>} 
+                    {editOpen ? <CommentReply
+                        editCommentURI={commentURI()}
+                        initialContent={content}
+                        initialIsHidden={isHidden}
+                        initialIsDeleted={isDeleted}
+                        onPermanentlyDelete={permanentlyDelete}
+                    /> : <PreviewBody body={content}/>}
                     <Divider sx={{borderBottomWidth: 2}}/>
                     <Toolbar>
                         <IconButton
@@ -141,6 +162,7 @@ export default function Comment({id, content, ratingConst, comments = [],date, u
                         userLikedConst={childComment.userLiked}
                         userDislikedConst={childComment.userDisliked}
                         isHiddenConst={childComment.isHidden}
+                        isDeletedConst={childComment.isDeleted}
                         depth={depth + 1}/>
                 ))}
             </Box>

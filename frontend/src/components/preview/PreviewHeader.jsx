@@ -6,7 +6,8 @@ import axios from "axios";
 export default function PreviewHeader({username, profilePicture, date, onEdit}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-    const canEdit = onEdit && currentUser?.username === username;
+    const isOwner = currentUser?.username === username;
+    const canEdit = onEdit && isOwner;
 
     function openProfile() {
         window.location.assign(`/${username}`);
@@ -52,7 +53,7 @@ export default function PreviewHeader({username, profilePicture, date, onEdit}) 
                     </Typography>
                 </Box>
                 <Typography variant="h6" align="left" minWidth="fit-content">
-                    {date}
+                    {new Date(date).toLocaleDateString()}
                 </Typography>
                 <IconButton
                     size="large"
@@ -65,7 +66,9 @@ export default function PreviewHeader({username, profilePicture, date, onEdit}) 
             </Box>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
                 {canEdit && <MenuItem onClick={handleEdit}>Edit</MenuItem>}
-                <MenuItem onClick={handleBlock}>Block user</MenuItem>
+                {!canEdit && !isOwner ? (
+                    <MenuItem onClick={handleBlock}>Block user</MenuItem>
+                ) : null}
             </Menu>
         </CardContent>
     );

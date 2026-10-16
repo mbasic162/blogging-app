@@ -14,7 +14,7 @@ export default function Settings() {
     let [blockedUsers, setBlockedUsers] = useState([])
     useEffect(() => {
         if(localStorage.getItem('token')){
-            axios.get("/user/editProfileDto").then((res) => {
+            axios.get("/user/getEditProfileDto").then((res) => {
                 setProfile(res.data)
                 setBlockedUsers(res.data.blockedUsers)
             })

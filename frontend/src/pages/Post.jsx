@@ -15,7 +15,6 @@ import CommentReply from "/src/components/CommentReply";
 
 export default function Post() {
     const post = useLoaderData();
-    const formattedDate = new Date(post.date).toLocaleDateString();
     const {postURI} = useParams();
     const [userLiked, setUserLiked] = useState(post.userLiked);
     const [userDisliked, setUserDisliked] = useState(post.userDisliked);
@@ -23,7 +22,8 @@ export default function Post() {
     const [replyOpen, setReplyOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-    const canEdit = currentUser?.username === post.username;
+    const isOwner = currentUser?.username === post.username;
+    const canEdit = isOwner;
 
     function openMenu(event) {
         setAnchorEl(event.currentTarget);
@@ -126,7 +126,7 @@ export default function Post() {
                     </Typography>
                     <Box flexGrow="1"/>
                     <Typography variant="h5">
-                        {formattedDate}
+                        {new Date(post.date).toLocaleDateString()}
                     </Typography>
                     <IconButton
                         size="large"
@@ -138,7 +138,9 @@ export default function Post() {
                 </Toolbar>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
                     {canEdit && <MenuItem onClick={handleEdit}>Edit</MenuItem>}
-                    <MenuItem onClick={handleBlock}>Block user</MenuItem>
+                    {!canEdit && !isOwner ? (
+                        <MenuItem onClick={handleBlock}>Block user</MenuItem>
+                    ) : null}
                 </Menu>
                 <Divider sx={{borderBottomWidth: 2}}/>
                 <Typography marginTop="2%" variant="h6">
@@ -182,7 +184,7 @@ export default function Post() {
                 {replyOpen && <CommentReply parentPostId={post.id}/>}
                 <PreviewContainer>
                     {post.comments.map((comment) => (
-                        <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} isHiddenConst={comment.isHidden} depth={0}/>
+                        <Comment key={comment.id} id={comment.id} content={comment.content} comments={comment.comments} ratingConst={comment.rating} date={comment.date} username={comment.username} profilePicture={comment.profilePicture} userLikedConst={comment.userLiked} userDislikedConst={comment.userDisliked} isHiddenConst={comment.isHidden} isDeletedConst={comment.isDeleted} depth={0}/>
                     ))}
                 </PreviewContainer>
             </Container>

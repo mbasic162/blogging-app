@@ -3,42 +3,49 @@ import * as Yup from "yup";
 import axios from "axios";
 import { TextField, Button, Checkbox, Box } from "@mui/material";
 
-export default function CommentReply({parentCommentId, parentPostId, editCommentURI, initialContent = '', initialIsHidden = false}) {
+export default function CommentReply({parentCommentId, parentPostId, editCommentURI, initialContent = '', initialIsHidden = false, initialIsDeleted = false, onPermanentlyDelete}) {
     const isEditing = Boolean(editCommentURI);
     return (
         <Formik
-            initialValues={{content: initialContent, isHidden: initialIsHidden}}
+            initialValues={{content: initialContent, isHidden: initialIsHidden, isDeleted: initialIsDeleted}}
             validationSchema={ Yup.object({
                 content: Yup.string()
                     .trim()
                     .min(1, 'Comment cannot be empty')
                     .max(1000, 'Must be 1000 characters or less')
                     .required('Comment cannot be empty'),
-                isHidden: Yup.boolean()
+                isHidden: Yup.boolean(),
+                isDeleted: Yup.boolean()
             })}
             onSubmit={async (values, {setFieldError}) => {
                 if (isEditing) {
-                    if (values.content !== initialContent) {
-                        axios.post('/comment/changeContent', {
-                            commentURI: editCommentURI,
-                            content: values.content
-                        }).catch((error) => {
-                            setFieldError('content', error?.response?.data || 'Something went wrong. Please try again later.');
-                        })
-                    }
-                    if (values.isHidden !== initialIsHidden) {
-                        if(values.isHidden) {
-                            axios.post('/comment/hide', {commentURI: editCommentURI}).catch((error) => {
-                                setFieldError('content', error?.response?.data || 'Something went wrong. Please try again later.');
-                            })
+                    try {
+                        if (values.isHidden !== initialIsHidden) {
+                            await axios.post(
+                                values.isHidden ? '/comment/hide' : '/comment/unhide',
+                                null,
+                                {params: {commentURI: editCommentURI}}
+                            );
                         }
-                        else {
-                            axios.post('/comment/unhide', {commentURI: editCommentURI}).catch((error) => {
-                                setFieldError('content', error?.response?.data || 'Something went wrong. Please try again later.');
-                            })
+                        if (values.isDeleted !== initialIsDeleted) {
+                            await axios.post(
+                                values.isDeleted ? '/comment/delete' : '/comment/undelete',
+                                null,
+                                {params: {commentURI: editCommentURI}}
+                            );
                         }
+                        if (values.content !== initialContent) {
+                            await axios.post('/comment/changeContent', null, {
+                                params: {
+                                    commentURI: editCommentURI,
+                                    newContent: values.content
+                                }
+                            });
+                        }
+                        window.location.reload();
+                    } catch (error) {
+                        setFieldError('content', error?.response?.data || 'Something went wrong. Please try again later.');
                     }
-                    window.location.reload();
                     return;
                 }
                 let data = {
@@ -66,12 +73,25 @@ export default function CommentReply({parentCommentId, parentPostId, editComment
             }}
         >
             <Form style={{display: "flex", flexDirection: "column", alignItems: "center", width: "100%"}}>
-                <Field as={TextField} label={isEditing ? "Edit comment" : "Comment"} name="content" variant="outlined" margin="none" multiline sx={{ width: "100%", backgroundColor: "white"}}/>
+                <Field as={TextField} label={isEditing ? "Edit comment" : "Comment"} name="content" variant="outlined" margin="none" multiline slotProps={{inputLabel: {shrink: true}}} sx={{ width: "100%", backgroundColor: "white"}}/>
                 <ErrorMessage name="content"/>
-                {isEditing && <Box sx={{display: "flex", alignItems: "center", marginTop: "2%"}}>
-                    <Field name="isHidden" type="checkbox" as={Checkbox}/>
-                    <label htmlFor="isHidden">Hide this comment</label>
+                {isEditing && <Box sx={{display: "flex", flexDirection: "column", alignItems: "center", marginTop: "2%"}}>
+                    <Box sx={{display: "grid", gridTemplateColumns: "32px 1fr", alignItems: "center", width: "240px"}}>
+                        <Field name="isHidden">
+                            {({field}) => <Checkbox {...field} checked={Boolean(field.value)} />}
+                        </Field>
+                        <label htmlFor="isHidden">Hide this comment</label>
+                    </Box>
+                    <Box sx={{display: "grid", gridTemplateColumns: "32px 1fr", alignItems: "center", width: "240px"}}>
+                        <Field name="isDeleted">
+                            {({field}) => <Checkbox {...field} checked={Boolean(field.value)} />}
+                        </Field>
+                        <label htmlFor="isDeleted">Delete this comment</label>
+                    </Box>
                 </Box>}
+                {isEditing && initialIsDeleted && <Button type="button" variant="contained" color="error" onClick={onPermanentlyDelete} sx={{marginTop: "2%"}}>
+                        Permanently delete
+                </Button>}
                 <Button type="submit" variant="outlined" color="primary" sx={{marginTop: "2%", backgroundColor: "#4F4F4F", color: "white"}}>
                     {isEditing ? "Save Comment" : "Send Comment"}
                 </Button>

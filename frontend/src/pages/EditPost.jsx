@@ -19,15 +19,25 @@ export default function EditPost() {
     const post = useLoaderData();
     const {postURI} = useParams();
 
+    function permanentlyDelete() {
+        if (!window.confirm("Permanently delete this post?")) return;
+        axios.post('/post/permanentlyDelete', {postURI})
+            .then(() => window.location.assign('/'))
+            .catch(() => {
+                window.dispatchEvent(new CustomEvent('errorAlert', {detail: 'Unable to permanently delete post'}));
+            });
+    }
+
     return (
         <Container maxWidth="md" height="100%">
             <Card sx={{marginTop: "5%", marginBottom: "5%", boxShadow: "2px 2px 1px #a7a7a7", padding: "5%", height: "100%"}}>
                 <Formik
-                    initialValues={{title: post.title, content: post.content, isHidden: post.isHidden || false}}
+                    initialValues={{title: post.title, content: post.content, isHidden: post.isHidden || false, isDeleted: post.isDeleted || false}}
                     validationSchema={Yup.object({
                         title: Yup.string().trim().min(5, 'Must be 5 characters or more').max(200, 'Must be 200 characters or less').required('This field is required'),
                         content: Yup.string().trim().min(100, 'Must be 100 characters or more').max(15000, 'Must be 15000 characters or less'),
-                        isHidden: Yup.boolean()
+                        isHidden: Yup.boolean(),
+                        isDeleted: Yup.boolean()
                     })}
                     onSubmit={async (values, {setFieldError}) => {
                         if (values.title !== post.title) {
@@ -52,6 +62,11 @@ export default function EditPost() {
                                 })
                             }
                         }
+                        if (values.isDeleted !== Boolean(post.isDeleted)) {
+                            axios.post(values.isDeleted ? '/post/delete' : '/post/undelete', {postURI: postURI}).catch((error) => {
+                                setFieldError('general', error?.response?.data || 'Something went wrong. Please try again later.');
+                            })
+                        }
                         window.location.href = `/post/${getPostURI(values.title, post.id)}`;
                     }}
                 >
@@ -60,11 +75,18 @@ export default function EditPost() {
                         <ErrorMessage name="title"/>
                         <Field as={TextField} label="Content" name="content" variant="outlined" multiline minRows="5" maxRows="200" sx={{mt: "5%", width: "100%"}}/>
                         <ErrorMessage name="content"/>
-                        <Box sx={{display: "flex", alignItems: "center", width: "220px", marginTop: "5%", marginBottom: "2%"}}>
+                        <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", width: "220px", marginTop: "5%"}}>
                             <Field name="isHidden" type="checkbox" as={Checkbox}/>
                             <label htmlFor="isHidden">Hide this post</label>
                         </Box>
+                        <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", width: "220px", marginBottom: "2%"}}>
+                            <Field name="isDeleted" type="checkbox" as={Checkbox}/>
+                            <label htmlFor="isDeleted">{post.isDeleted ? "Undelete this post" : "Delete this post"}</label>
+                        </Box>
                         <ErrorMessage name="general"/>
+                        {post.isDeleted && <Button type="button" variant="contained" color="error" onClick={permanentlyDelete} sx={{marginTop: "2%"}}>
+                                Permanently delete
+                        </Button>}
                         <Button type="submit" variant="outlined" color="primary" sx={{marginTop: "2%", backgroundColor: "#4F4F4F", color: "white"}}>
                             Save
                         </Button>
