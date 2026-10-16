@@ -133,7 +133,7 @@ public class UserController {
         return ResponseEntity.ok(following.stream().map(userFollowMapper::toDto).collect(Collectors.toSet()));
     }
 
-    @GetMapping("/editProfileDto")
+    @GetMapping("/getEditProfileDto")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EditProfileDto> getEditProfileDto(
             Authentication authentication

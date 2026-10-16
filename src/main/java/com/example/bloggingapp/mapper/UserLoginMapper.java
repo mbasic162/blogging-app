@@ -10,7 +10,6 @@ import org.mapstruct.Mapping;
 public interface UserLoginMapper {
 
     @Mapping(target = "profilePicture", source = "user", qualifiedByName = "mapProfilePicture")
-    @Mapping(target = "token", source = "token")
     @Mapping(target = "following", source = "user.following")
     UserLoginDto toDto(User user, String token);
 }
